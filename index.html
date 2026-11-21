@@ -1,0 +1,949 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>마음그림 AI 체험 (시연용)</title>
+<style>
+  /* 색: 로고에서 뽑은 분홍(마음그림 글자)·청록(AI 글자)·연두(새싹)·노랑(토리 몸) */
+  :root {
+    --bg: #fffaf3;
+    --surface: #ffffff;
+    --ink: #3b2f3a;          /* 본문 글자: 바탕 #fffaf3 대비 12.2:1 */
+    --muted: #5f5560;        /* 보조 글자: 바탕 대비 6.8:1 */
+    --pink: #c2185b;         /* 주 버튼 바탕: 흰 글자 대비 5.9:1 (로고 분홍 #d4005a를 조금 어둡게) */
+    --pink-dark: #9c1248;
+    --pink-soft: #fde7f1;
+    --teal: #0e6e74;         /* 청록 글자·테두리: 흰 바탕 대비 6.0:1 (로고 청록 #008890을 조금 어둡게) */
+    --teal-soft: #e0f4f4;
+    --green: #78b828;        /* 장식용 연두(글자에 쓰지 않음) */
+    --green-text: #2e6b12;
+    --green-soft: #e9f7d8;
+    --sun: #f8c450;          /* 장식용 노랑(토리 몸 색) */
+    --sun-soft: #fff1c9;
+    --sim-ink: #7a2d00;      /* 시뮬레이션 표시 글자: #fff1c9 대비 8.5:1 */
+    --line: #e6dccf;
+    --radius: 22px;
+    --font: "Apple SD Gothic Neo", "AppleSDGothicNeo", "Malgun Gothic", "맑은 고딕", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }   /* 버튼·상자에 준 display 값이 hidden을 덮어쓰지 않게 */
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--font); font-size: 18px; line-height: 1.6;
+    word-break: keep-all; overflow-wrap: anywhere;
+  }
+  img { max-width: 100%; display: block; }
+  button, input, textarea { font: inherit; color: inherit; }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 0 16px; }
+
+  /* 머리 영역 */
+  header.top { background: var(--surface); border-bottom: 2px solid var(--line); position: sticky; top: 0; z-index: 5; }
+  header.top .wrap { display: flex; align-items: center; gap: 12px; min-height: 64px; flex-wrap: wrap; padding-top: 6px; padding-bottom: 6px; }
+  header.top img.mini { height: 44px; width: auto; }
+  .steps { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+  .steps .count { font-weight: 800; color: var(--teal); white-space: nowrap; }
+  .steps .label { font-weight: 700; white-space: nowrap; }
+  .dots { display: flex; gap: 6px; list-style: none; margin: 0; padding: 0; }
+  .dots li { width: 14px; height: 14px; border-radius: 50%; background: var(--line); }
+  .dots li.done { background: var(--green); }
+  .dots li.now { background: var(--pink); transform: scale(1.25); }
+
+  /* 표시 띠: 시연 예시 / 시뮬레이션 */
+  .notice {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin: 16px 0 0; padding: 12px 16px; border-radius: 16px; font-size: 16px; line-height: 1.45;
+  }
+  .notice strong { font-size: 18px; }
+  .notice.demo { background: var(--teal-soft); border: 2px solid var(--teal); color: #0b4f53; }
+  .notice.sim { background: var(--sun-soft); border: 2px solid #c98a00; color: var(--sim-ink); }
+  .tag {
+    display: inline-block; font-weight: 800; font-size: 15px; padding: 3px 10px; border-radius: 999px;
+    background: var(--teal); color: #fff; white-space: nowrap;
+  }
+
+  main { padding-bottom: 48px; }
+  section.step { display: none; padding-top: 4px; }
+  section.step.active { display: block; animation: fade .25s ease-out; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    section.step.active, .chat .msg { animation: none !important; }
+    .dots li.now { transform: none; }
+  }
+  h1, h2, h3 { line-height: 1.35; margin: 0; }
+  h2.step-title { font-size: 24px; margin: 20px 0 12px; }
+
+  .card { background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); padding: 20px; }
+  .stack > * + * { margin-top: 16px; }
+
+  /* 버튼: 최소 높이 56px(아이 손가락 기준), 주 버튼은 화면마다 하나 */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 56px; padding: 10px 24px; border-radius: 999px; border: 3px solid transparent;
+    font-size: 20px; font-weight: 800; cursor: pointer; text-decoration: none; touch-action: manipulation;
+  }
+  .btn-primary { background: var(--pink); color: #fff; box-shadow: 0 4px 0 var(--pink-dark); }
+  .btn-primary:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--pink-dark); }
+  .btn-secondary { background: var(--surface); color: var(--teal); border-color: var(--teal); }
+  .btn-secondary:active { background: var(--teal-soft); }
+  .btn-quiet { background: transparent; color: var(--muted); border-color: var(--line); font-size: 18px; min-height: 52px; }
+  .btn-block { width: 100%; }
+  .actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .actions.end { justify-content: space-between; margin-top: 24px; }
+  :focus-visible { outline: 4px solid var(--teal); outline-offset: 3px; }
+  [tabindex="-1"]:focus { outline: none; }
+
+  /* 입력 */
+  label.field-label { display: block; font-weight: 800; font-size: 19px; margin-bottom: 6px; }
+  .hint { font-size: 16px; color: var(--muted); margin: 4px 0 0; }
+  .hint.adult::before { content: "보호자 안내 · "; font-weight: 800; color: var(--teal); }
+  input[type="text"], textarea {
+    width: 100%; min-height: 56px; padding: 12px 16px; border: 2px solid #b9ad9f; border-radius: 16px;
+    background: #fff; font-size: 20px;
+  }
+  textarea { min-height: 96px; resize: vertical; line-height: 1.5; }
+  input[type="text"]:focus, textarea:focus { border-color: var(--teal); }
+  .inline-msg { color: var(--pink-dark); font-weight: 700; font-size: 16px; margin: 6px 0 0; min-height: 1em; }
+
+  /* 시작 화면 */
+  .hero { text-align: center; padding: 20px 0 8px; }
+  .hero .logo-box { background: #fff; border-radius: 28px; border: 2px solid var(--line); padding: 8px; max-width: 520px; margin: 0 auto; }
+  .hero h1 { font-size: 28px; margin-top: 18px; }
+  .hero p { margin: 8px 0 0; color: var(--muted); }
+  .start-card { max-width: 520px; margin: 20px auto 0; }
+  .privacy { font-size: 16px; color: var(--muted); background: var(--green-soft); border-radius: 14px; padding: 12px 14px; }
+
+  /* 캐릭터와 말풍선 */
+  .speaker { display: flex; gap: 12px; align-items: flex-start; }
+  .avatar {
+    flex: 0 0 auto; width: 76px; height: 76px; border-radius: 50%; background: #fff;
+    border: 3px solid var(--line); overflow: hidden; display: flex; align-items: center; justify-content: center;
+  }
+  .avatar img { width: 88%; height: 88%; object-fit: contain; }
+  .avatar.lumi { border-color: #6fc3d6; }
+  .avatar.tori { border-color: var(--sun); }
+  .bubble {
+    position: relative; background: #fff; border: 2px solid var(--line); border-radius: 20px;
+    padding: 12px 16px; font-size: 21px; line-height: 1.5; font-weight: 600; max-width: 100%;
+  }
+  .who { display: block; font-size: 15px; font-weight: 800; color: var(--teal); margin-bottom: 2px; }
+  .who.tori { color: #8a5a00; }
+
+  /* 대화 기록 */
+  .chat { display: flex; flex-direction: column; gap: 12px; }
+  .chat .msg { animation: fade .25s ease-out; }
+  .chat .me { align-self: flex-end; max-width: 85%; }
+  .chat .me .bubble { background: var(--pink-soft); border-color: #f3bcd3; font-weight: 600; }
+  .chat .me .who { color: var(--pink-dark); text-align: right; }
+  .chat .skip .bubble { background: #f4f1ec; color: var(--muted); font-weight: 600; }
+  .chat .lumi-line .avatar, .chat .tori-line .avatar { width: 60px; height: 60px; }
+  .answer-box { margin-top: 16px; border-top: 2px dashed var(--line); padding-top: 16px; }
+
+  /* 그림책 장면 자리표시 */
+  .scene {
+    aspect-ratio: 4 / 3; border: 3px dashed #b9ad9f; border-radius: var(--radius); background: repeating-linear-gradient(45deg, #fbf3e6, #fbf3e6 14px, #fff8ee 14px, #fff8ee 28px);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 16px;
+  }
+  .scene strong { font-size: 22px; }
+  .scene span { color: var(--muted); font-size: 16px; }
+
+  /* 마음색 */
+  .colors { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 10px; list-style: none; padding: 0; margin: 0; }
+  .swatch {
+    width: 100%; min-height: 104px; background: transparent; border: 3px solid transparent; border-radius: 18px;
+    display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px 2px; cursor: pointer; touch-action: manipulation;
+  }
+  .swatch .dot {
+    width: 60px; height: 60px; border-radius: 50%; border: 3px solid rgba(0,0,0,.18);
+    display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 900; color: transparent;
+  }
+  .swatch .name { font-size: 16px; font-weight: 700; }
+  .swatch[aria-pressed="true"] { border-color: var(--ink); background: #fff; }
+  .swatch[aria-pressed="true"] .dot { color: #fff; text-shadow: 0 0 3px #000, 0 0 2px #000; box-shadow: 0 0 0 4px #fff, 0 0 0 7px var(--ink); }
+  .swatch[aria-pressed="true"] .name { font-weight: 900; text-decoration: underline; text-underline-offset: 4px; }
+  .picked-line { font-size: 17px; color: var(--muted); margin: 12px 0 0; min-height: 1.6em; }
+
+  /* 사진 올리기 */
+  .photo-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+  .photo-buttons label { cursor: pointer; }
+  .visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .photo-preview { border-radius: 18px; overflow: hidden; border: 2px solid var(--line); background: #fff; }
+  .photo-preview img { width: 100%; max-height: 360px; object-fit: contain; background: #fff; }
+  .photo-empty { border: 3px dashed #b9ad9f; border-radius: 18px; padding: 28px 16px; text-align: center; color: var(--muted); }
+
+  /* 목소리 남기기 */
+  .voice { margin-top: 10px; }
+  .voice-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .voice .btn { font-size: 18px; min-height: 52px; padding: 8px 18px; }
+  .icon { width: 22px; height: 22px; flex: 0 0 auto; }
+  .voice-live { display: inline-flex; align-items: center; gap: 8px; font-weight: 800; color: #b71c1c; font-size: 18px; }
+  .rec-dot { width: 16px; height: 16px; border-radius: 50%; background: #d32f2f; display: inline-block; animation: blink 1s steps(2, start) infinite; }
+  @keyframes blink { to { opacity: .25; } }
+  .voice-done { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 8px; font-weight: 700; color: var(--green-text); }
+  .voice-mark { display: inline-flex; align-items: center; gap: 6px; }
+  .said .listen { margin-top: 8px; min-height: 48px; font-size: 17px; padding: 6px 16px; }
+  @media (prefers-reduced-motion: reduce) { .rec-dot { animation: none; } }
+
+  /* 보호자 기록 */
+  .record h3 { font-size: 18px; color: var(--teal); margin-bottom: 6px; }
+  .record .title-text { font-size: 24px; font-weight: 800; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 0; }
+  .chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 6px; border: 2px solid var(--line); border-radius: 999px; background: #fff; font-weight: 700; }
+  .chip i { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(0,0,0,.2); display: inline-block; }
+  .said { list-style: none; padding: 0; margin: 0; }
+  .said li { padding: 12px 0; border-top: 1px solid var(--line); }
+  .said li:first-child { border-top: 0; padding-top: 0; }
+  .said .q { font-size: 15px; color: var(--muted); }
+  .said .a { font-size: 19px; font-weight: 700; }
+  .said .a.none { color: var(--muted); font-weight: 600; }
+  .tips { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; counter-reset: tip; }
+  .tips li { background: var(--green-soft); border-radius: 18px; padding: 14px 16px; }
+  .tips li b { display: block; font-size: 19px; color: var(--green-text); }
+  .tips li b::before { counter-increment: tip; content: "TIP " counter(tip) "  "; }
+  .tips .ex { display: block; margin-top: 6px; font-weight: 700; }
+  .farewell { background: var(--pink-soft); border-radius: var(--radius); padding: 16px; }
+  .farewell .speaker + .speaker { margin-top: 12px; }
+  .small { font-size: 15px; color: var(--muted); }
+
+  .grid-2 { display: grid; gap: 16px; }
+  @media (min-width: 860px) {
+    body { font-size: 19px; }
+    .grid-2 { grid-template-columns: 1fr 1fr; align-items: start; gap: 24px; }
+    .colors { grid-template-columns: repeat(6, 1fr); }
+    h2.step-title { font-size: 28px; }
+    .avatar { width: 92px; height: 92px; }
+    #step2 .scene { position: sticky; top: 96px; }
+  }
+  @media (max-width: 420px) {
+    .steps { margin-left: 0; width: 100%; justify-content: space-between; }
+    header.top img.mini { height: 38px; }
+    .btn { font-size: 19px; padding: 10px 18px; }
+    .avatar { width: 64px; height: 64px; }
+    .bubble { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top" id="topbar" hidden>
+  <div class="wrap">
+    <img class="mini" src="assets/logo.png" alt="마음그림 AI">
+    <div class="steps" aria-live="polite">
+      <span class="count" id="stepCount">2/5</span>
+      <span class="label" id="stepLabel">루미와 이야기</span>
+      <ol class="dots" id="stepDots" aria-hidden="true"><li></li><li></li><li></li><li></li><li></li></ol>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- 1단계: 시작 -->
+  <section class="step active" id="step1" aria-labelledby="s1title" data-label="시작">
+    <div class="hero">
+      <div class="logo-box"><img src="assets/logo.png" alt="마음그림 AI 로고. 왼쪽에 벌새, 오른쪽에 연필을 든 새싹 머리 로봇 토리"></div>
+      <h1 id="s1title">마음그림 AI 체험</h1>
+      <p>그림책을 보고 루미·토리와 이야기한 다음 마음을 그림으로 남겨요.</p>
+      <p class="small">단계 1/5 · 시작</p>
+    </div>
+    <div class="card start-card stack">
+      <div>
+        <label class="field-label" for="childName">아이 이름(가명)</label>
+        <input type="text" id="childName" maxlength="10" autocomplete="off" placeholder="아이 이름(가명)">
+        <p class="hint adult">실제 이름 대신 가명을 적어 주세요. 비워 두면 '친구'라고 부릅니다.</p>
+      </div>
+      <p class="privacy">시연용 화면입니다. 적은 내용과 사진, 목소리는 이 기기에서만 잠깐 보이거나 들릴 뿐 어디에도 저장하거나 보내지 않습니다. 새로고침하면 모두 지워집니다.</p>
+      <button type="button" class="btn btn-primary btn-block" id="startBtn">시작하기</button>
+    </div>
+  </section>
+
+  <!-- 2단계: 루미 감정 질문 -->
+  <section class="step" id="step2" aria-labelledby="s2title" data-label="루미와 이야기">
+    <div class="notice demo" role="note"><span class="tag">AI 대화 기능 시연 예시</span> 질문이 미리 정해 둔 순서대로 나오는 화면입니다. 실시간 AI는 연결되어 있지 않습니다.</div>
+    <h2 class="step-title" id="s2title">루미와 이야기해요</h2>
+    <div class="grid-2">
+      <figure class="scene" style="margin:0" aria-label="그림책 장면 자리표시">
+        <strong>그림책 장면 4 자리</strong>
+        <span>(원화 받으면 교체)</span>
+        <span>《포포의 마음색 일기》</span>
+      </figure>
+      <div class="card">
+        <div class="chat" id="chat2" aria-live="polite"></div>
+        <div class="answer-box" id="answer2">
+          <label class="field-label" for="ans2">하고 싶은 말 <span class="small">(안 적어도 괜찮아)</span></label>
+          <textarea id="ans2" maxlength="200"></textarea>
+          <div class="voice" data-voice="ans2"></div>
+          <p class="hint adult">아이의 말을 그대로 받아 적거나 목소리로 남겨 주셔도 됩니다.</p>
+          <p class="inline-msg" id="ans2msg" aria-live="polite"></p>
+          <div class="actions">
+            <button type="button" class="btn btn-primary" id="say2">이렇게 말했어</button>
+            <button type="button" class="btn btn-secondary" id="alt2" hidden>다른 질문 해 줘</button>
+            <button type="button" class="btn btn-quiet" id="skip2">건너뛸래</button>
+          </div>
+        </div>
+        <div id="done2" hidden style="margin-top:16px">
+          <button type="button" class="btn btn-primary btn-block" id="toStep3">토리 만나러 가기</button>
+        </div>
+      </div>
+    </div>
+    <div class="actions end"><button type="button" class="btn btn-quiet" data-back="1">← 이전</button></div>
+  </section>
+
+  <!-- 3단계: 토리 마음색 고르기 -->
+  <section class="step" id="step3" aria-labelledby="s3title" data-label="마음색 고르기">
+    <div class="notice demo" role="note"><span class="tag">AI 대화 기능 시연 예시</span> 질문이 미리 정해 둔 순서대로 나오는 화면입니다. 실시간 AI는 연결되어 있지 않습니다.</div>
+    <h2 class="step-title" id="s3title">토리와 마음색을 골라요</h2>
+    <div class="grid-2">
+      <div class="stack">
+        <div class="speaker">
+          <div class="avatar tori"><img src="assets/tori.png" alt="토리"></div>
+          <p class="bubble" style="margin:0"><span class="who tori">토리</span><span id="tori3a"></span></p>
+        </div>
+        <div class="speaker">
+          <div class="avatar tori" aria-hidden="true"><img src="assets/tori.png" alt=""></div>
+          <p class="bubble" style="margin:0" aria-live="polite"><span class="who tori">토리</span><span id="tori3b"></span></p>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="font-size:20px;margin-bottom:10px">색을 눌러 봐. 여러 개 골라도 돼.</h3>
+        <ul class="colors" id="colorGrid"></ul>
+        <p class="picked-line" id="pickedLine" aria-live="polite"></p>
+        <div id="reasonBox" hidden>
+          <label class="field-label" for="reason3">왜 그 색이 떠올랐어? <span class="small">(안 적어도 괜찮아)</span></label>
+          <textarea id="reason3" maxlength="200"></textarea>
+          <div class="voice" data-voice="reason3"></div>
+          <p class="hint adult">아이의 말을 그대로 받아 적거나 목소리로 남겨 주셔도 됩니다.</p>
+        </div>
+      </div>
+    </div>
+    <div class="actions end">
+      <button type="button" class="btn btn-quiet" data-back="2">← 이전</button>
+      <button type="button" class="btn btn-primary" id="toStep4">그림 그리러 가기</button>
+    </div>
+  </section>
+
+  <!-- 4단계: 마음그림 등록 -->
+  <section class="step" id="step4" aria-labelledby="s4title" data-label="마음그림 올리기">
+    <div class="notice demo" role="note"><span class="tag">AI 대화 기능 시연 예시</span> 질문이 미리 정해 둔 순서대로 나오는 화면입니다. 실시간 AI는 연결되어 있지 않습니다.</div>
+    <h2 class="step-title" id="s4title">마음그림을 보여 줘</h2>
+    <div class="grid-2">
+      <div class="stack">
+        <div class="speaker">
+          <div class="avatar tori"><img src="assets/tori.png" alt="토리"></div>
+          <p class="bubble" style="margin:0"><span class="who tori">토리</span>네 마음을 그림으로 그려 볼까? 하트를 칠해도 좋고, 그리고 싶은 모습을 그려도 좋아.</p>
+        </div>
+        <div class="photo-buttons">
+          <label class="btn btn-secondary" for="photoCam">사진 찍기</label>
+          <input class="visually-hidden" type="file" id="photoCam" accept="image/*" capture="environment">
+          <label class="btn btn-secondary" for="photoPick">앨범에서 고르기</label>
+          <input class="visually-hidden" type="file" id="photoPick" accept="image/*">
+        </div>
+        <p class="hint adult">사진은 이 화면에서만 보이고 어디로도 보내지 않습니다.</p>
+        <div id="photoArea"><div class="photo-empty">다 그리면 그림 사진을 찍어 줘.</div></div>
+      </div>
+      <div class="card stack">
+        <div>
+          <div class="speaker" style="margin-bottom:10px">
+            <div class="avatar tori" aria-hidden="true"><img src="assets/tori.png" alt=""></div>
+            <p class="bubble" style="margin:0"><span class="who tori">토리</span><span id="drawQ">그림 속에 누가 있니?</span></p>
+          </div>
+          <label class="field-label visually-hidden" for="drawAns" id="drawAnsLabel">그림 속에 누가 있니?</label>
+          <textarea id="drawAns" maxlength="200" aria-describedby="drawHint"></textarea>
+          <div class="voice" data-voice="drawAns"></div>
+          <p class="hint" id="drawHint">안 적어도 괜찮아. 목소리로 들려줘도 돼.</p>
+          <button type="button" class="btn btn-quiet" id="drawSwap" style="margin-top:8px">다른 질문 해 줘</button>
+        </div>
+        <div>
+          <div class="speaker" style="margin-bottom:10px">
+            <div class="avatar tori" aria-hidden="true"><img src="assets/tori.png" alt=""></div>
+            <p class="bubble" style="margin:0"><span class="who tori">토리</span>이 그림에 제목을 붙여 볼까?</p>
+          </div>
+          <label class="field-label" for="drawTitle">그림 제목 <span class="small">(안 적어도 괜찮아)</span></label>
+          <input type="text" id="drawTitle" maxlength="30" autocomplete="off">
+        </div>
+        <div id="keepLine" hidden class="speaker" aria-live="polite">
+          <div class="avatar tori" aria-hidden="true"><img src="assets/tori.png" alt=""></div>
+          <p class="bubble" style="margin:0"><span class="who tori">토리</span><span id="keepText"></span></p>
+        </div>
+        <button type="button" class="btn btn-primary btn-block" id="keepBtn">토리에게 보여 주기</button>
+        <button type="button" class="btn btn-primary btn-block" id="toStep5" hidden>보호자 화면 보기</button>
+      </div>
+    </div>
+    <div class="actions end"><button type="button" class="btn btn-quiet" data-back="3">← 이전</button></div>
+  </section>
+
+  <!-- 5단계: 보호자용 마음그림 기록 -->
+  <section class="step" id="step5" aria-labelledby="s5title" data-label="보호자 기록">
+    <div class="notice sim" role="note"><strong>시뮬레이션 — 실제 저장·전송 기능은 없습니다</strong> 보호자 휴대폰에서 기록을 보는 모습을 미리 꾸며 본 화면입니다.</div>
+    <h2 class="step-title" id="s5title">오늘의 마음그림 기록</h2>
+    <p style="margin:0 0 16px" id="recIntro"></p>
+    <div class="grid-2 record">
+      <div class="stack">
+        <div class="card">
+          <h3>그림</h3>
+          <div id="recPhoto"></div>
+        </div>
+        <div class="card">
+          <h3>그림 제목</h3>
+          <p style="margin:0" id="recTitle"></p>
+        </div>
+        <div class="card">
+          <h3>아이가 고른 색</h3>
+          <ul class="chips" id="recColors"></ul>
+          <p class="small" style="margin:10px 0 0">아이가 고른 색을 그대로 보여 드립니다. 색마다 정해진 뜻은 없으니 왜 골랐는지는 아이의 말로 들어 주세요.</p>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="card">
+          <h3>아이가 한 말</h3>
+          <ul class="said" id="recSaid"></ul>
+        </div>
+        <div class="card">
+          <h3>공감 대화 TIP</h3>
+          <ol class="tips">
+            <li><b>감정 인정하기</b>아이가 한 말을 그대로 받아서 마음을 짚어 주세요.<span class="ex">예) “동생이 장난감을 가져가서 속상했구나.”</span></li>
+            <li><b>바라는 도움 묻기</b>그때 어떤 도움을 바랐는지 물어봐 주세요.<span class="ex">예) “그때 엄마가 어떻게 해 주었으면 좋았을까?”</span></li>
+            <li><b>함께 해결 방법 찾기</b>다음에 비슷한 일이 생기면 어떻게 할지 함께 정해 보세요.<span class="ex">예) “다음에 또 그러면 어떻게 하면 좋을까? 같이 생각해 보자.”</span></li>
+          </ol>
+          <p class="small" style="margin:12px 0 0">아이가 바로 대답하지 않으면 기다려 주시거나 다음에 다시 물어보셔도 됩니다. 이야기를 마칠 때는 “네 마음을 이야기해 줘서 고마워.”라고 말해 주세요.</p>
+        </div>
+      </div>
+    </div>
+    <div class="farewell" style="margin-top:16px">
+      <p class="small" style="margin:0 0 10px;font-weight:800">아이와 함께 보는 마무리 인사</p>
+      <div class="speaker">
+        <div class="avatar lumi"><img src="assets/lumi_TEMP.png" alt="루미"></div>
+        <p class="bubble" style="margin:0"><span class="who">루미</span>오늘 네 마음을 이야기해 줘서 고마워!</p>
+      </div>
+      <div class="speaker">
+        <div class="avatar tori"><img src="assets/tori.png" alt="토리"></div>
+        <p class="bubble" style="margin:0"><span class="who tori">토리</span>네 마음그림도 정말 소중해. 다음에 또 만나자!</p>
+      </div>
+    </div>
+    <div class="actions end">
+      <button type="button" class="btn btn-quiet" data-back="4">← 이전</button>
+      <button type="button" class="btn btn-primary" id="restartBtn">처음으로 돌아가기</button>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  // 마음색: 색 이름만 쓰고 감정 단어는 붙이지 않는다.
+  var COLORS = [
+    ["빨간색", "#e53935"], ["주황색", "#fb8c00"], ["노란색", "#fdd835"], ["연두색", "#9ccc3c"],
+    ["초록색", "#2e7d32"], ["하늘색", "#4fc3f7"], ["파란색", "#1e63c8"], ["남색", "#283593"],
+    ["보라색", "#8e44ad"], ["분홍색", "#f48fb1"], ["갈색", "#8d5524"], ["검은색", "#222222"]
+  ];
+  var LABELS = ["시작", "루미와 이야기", "마음색 고르기", "마음그림 올리기", "보호자 기록"];
+
+  var state;
+  function freshState(name) {
+    return {
+      name: name || "",
+      said: [],            // [{q, a}] a가 null이면 건너뜀
+      colors: [],          // 고른 순서대로 색 번호
+      reason: "",
+      photoUrl: null,
+      drawQ: "그림 속에 누가 있니?",
+      drawAns: "",
+      title: "",
+      chatStarted: false
+    };
+  }
+  state = freshState("");
+
+  function $(id) { return document.getElementById(id); }
+
+  // 이름 뒤 조사: 끝 글자에 받침이 있으면 '아'·'이가', 없으면 '야'·'가'
+  function hasBatchim(word) {
+    var c = word.charCodeAt(word.length - 1);
+    if (c < 0xAC00 || c > 0xD7A3) return false;
+    return (c - 0xAC00) % 28 !== 0;
+  }
+  function nm() { return state.name || "친구"; }
+  function callName() { var n = nm(); return n + (hasBatchim(n) ? "아" : "야"); }
+  function baseName() { var n = nm(); return hasBatchim(n) ? n + "이" : n; }
+  function answered(s) { return !!(s && (s.a || s.voice)); }
+
+  // ---------- 목소리 남기기 ----------
+  // 녹음은 이 브라우저 메모리(blob 주소)에만 두고 어디로도 보내지 않는다.
+  var ICON = {
+    mic: '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>',
+    play: '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>',
+    stop: '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect fill="currentColor" x="6" y="6" width="12" height="12" rx="2"/></svg>'
+  };
+  var MAX_SEC = 60;
+  var MSG_NO_REC = "이 화면에서는 녹음을 쓸 수 없어요. 글로 적어 주세요.";
+  var MSG_DENIED = "마이크 사용을 허용하지 않아 녹음할 수 없어요. 글로 적어 주세요.";
+  var MSG_WAIT = "마이크 허용 창이 떠 있으면 '허용'을 눌러 주세요. 녹음이 안 되면 글로 적어 주세요.";
+  var voiceUrls = [];        // 처음으로 돌아갈 때 모두 지운다
+  var active = null;         // 지금 녹음 중인 것 {rec, mr, stream, timer, start, chunks, discard, after}
+  var recorders = {};
+  var voiceGen = 0;
+
+  function canRecord() {
+    // 파일을 더블클릭해 연 경우(file://)는 브라우저마다 동작이 달라 녹음을 쓰지 않는다.
+    return !!(window.isSecureContext && location.protocol !== "file:" && navigator.mediaDevices &&
+      typeof navigator.mediaDevices.getUserMedia === "function" && typeof window.MediaRecorder === "function");
+  }
+  function pickMime() {
+    if (!window.MediaRecorder || typeof MediaRecorder.isTypeSupported !== "function") return "";
+    var list = ["audio/webm", "audio/mp4"];
+    for (var i = 0; i < list.length; i++) { if (MediaRecorder.isTypeSupported(list[i])) return list[i]; }
+    return "";
+  }
+  function stopTracks(stream) {
+    if (stream) stream.getTracks().forEach(function (t) { t.stop(); });
+  }
+  function revokeVoice(v) {
+    if (!v) return;
+    URL.revokeObjectURL(v.url);
+    var i = voiceUrls.indexOf(v.url); if (i !== -1) voiceUrls.splice(i, 1);
+  }
+
+  function makeRecorder(box) {
+    var key = box.getAttribute("data-voice");
+    box.innerHTML =
+      '<div class="voice-row">' +
+        '<button type="button" class="btn btn-secondary v-rec">' + ICON.mic + '<span class="v-rec-label">목소리 남기기</span></button>' +
+        '<span class="voice-live" hidden><i class="rec-dot" aria-hidden="true"></i><span>녹음 중 <b class="v-sec">0</b>초</span></span>' +
+        '<button type="button" class="btn btn-secondary v-stop" hidden>' + ICON.stop + '멈추기</button>' +
+      '</div>' +
+      '<div class="voice-done" hidden><span class="voice-mark">' + ICON.mic + '<span class="v-done-text"></span></span>' +
+        '<button type="button" class="btn btn-quiet v-play">' + ICON.play + '<span class="v-play-label">들어 보기</span></button></div>' +
+      '<p class="inline-msg v-msg" aria-live="polite"></p>';
+    var q = function (c) { return box.querySelector(c); };
+    var rec = { key: key, voice: null, audio: null };
+
+    rec.render = function (recording) {
+      q(".voice-live").hidden = !recording;
+      q(".v-stop").hidden = !recording;
+      q(".v-rec").hidden = !!recording;
+      q(".v-rec-label").textContent = rec.voice ? "다시 남기기" : "목소리 남기기";
+      q(".voice-done").hidden = recording || !rec.voice;
+      if (rec.voice) q(".v-done-text").textContent = "목소리를 남겼어 (" + rec.voice.sec + "초)";
+      if (recording) q(".v-sec").textContent = "0";
+    };
+    rec.say = function (text, adult) {
+      var m = q(".v-msg");
+      m.className = "inline-msg v-msg" + (adult ? " hint adult" : "");
+      m.textContent = text || "";
+    };
+    rec.stopPreview = function () {
+      if (rec.audio) { rec.audio.pause(); rec.audio = null; }
+      q(".v-play-label").textContent = "들어 보기";
+    };
+    rec.set = function (v) {          // 새 녹음이 들어오면 이전 녹음을 바꾼다
+      rec.stopPreview();
+      if (rec.voice && rec.voice !== v) revokeVoice(rec.voice);
+      rec.voice = v; rec.render(false);
+    };
+    rec.take = function () {          // 답으로 넘기고 칸은 비운다(주소는 기록에 남김)
+      var v = rec.voice; rec.stopPreview(); rec.voice = null; rec.say(""); rec.render(false); return v;
+    };
+    rec.clear = function () { rec.stopPreview(); revokeVoice(rec.voice); rec.voice = null; rec.say(""); rec.render(false); };
+
+    q(".v-rec").addEventListener("click", function () { startRecording(rec); });
+    q(".v-stop").addEventListener("click", function () { stopActive(); });
+    q(".v-play").addEventListener("click", function () {
+      if (!rec.voice) return;
+      if (rec.audio) { rec.stopPreview(); return; }
+      rec.audio = new Audio(rec.voice.url);
+      rec.audio.addEventListener("ended", rec.stopPreview);
+      q(".v-play-label").textContent = "멈추기";
+      var pr = rec.audio.play(); if (pr && pr.catch) pr.catch(rec.stopPreview);
+    });
+    rec.render(false);
+    recorders[key] = rec;
+    return rec;
+  }
+
+  function startRecording(rec) {
+    rec.say("");
+    if (!canRecord()) { rec.say(MSG_NO_REC, true); return; }
+    if (active) { stopActive(); }
+    rec.stopPreview();
+    var btn = document.querySelector('[data-voice="' + rec.key + '"] .v-rec');
+    var gen = ++voiceGen;            // 마이크 허락을 기다리는 사이 화면을 옮기면 녹음을 시작하지 않는다
+    if (btn) btn.disabled = true;
+    var waitTimer = setTimeout(function () {   // 허용 창에서 오래 기다리면 버튼을 다시 살리고 안내한다
+      if (btn) btn.disabled = false;
+      if (gen === voiceGen) rec.say(MSG_WAIT, true);
+    }, 8000);
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+      clearTimeout(waitTimer);
+      if (btn) btn.disabled = false;
+      if (gen !== voiceGen) { stopTracks(stream); return; }
+      rec.say("");
+      var mime = pickMime(), mr;
+      try { mr = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream); }
+      catch (e) { stopTracks(stream); rec.say(MSG_NO_REC, true); return; }
+      var a = { rec: rec, mr: mr, stream: stream, chunks: [], start: Date.now(), discard: false, after: [] };
+      active = a;
+      mr.addEventListener("dataavailable", function (e) { if (e.data && e.data.size) a.chunks.push(e.data); });
+      mr.addEventListener("stop", function () {
+        stopTracks(a.stream);
+        clearInterval(a.timer);
+        if (active === a) active = null;
+        var sec = Math.max(1, Math.round((Date.now() - a.start) / 1000));
+        if (!a.discard && a.chunks.length) {
+          var blob = new Blob(a.chunks, { type: mr.mimeType || mime || "audio/webm" });
+          var url = URL.createObjectURL(blob);
+          voiceUrls.push(url);
+          rec.set({ url: url, sec: Math.min(sec, MAX_SEC), type: blob.type });
+        } else {
+          rec.render(false);
+        }
+        a.after.forEach(function (fn) { fn(); });
+        if (current === 5 && !a.discard) renderRecord();
+      });
+      a.timer = setInterval(function () {
+        var sec = Math.floor((Date.now() - a.start) / 1000);
+        var el = document.querySelector('[data-voice="' + rec.key + '"] .v-sec');
+        if (el) el.textContent = String(Math.min(sec, MAX_SEC));
+        if (sec >= MAX_SEC) { rec.say("1분이 지나서 녹음을 멈췄어."); stopActive(); }
+      }, 250);
+      mr.start();
+      rec.render(true);
+    }).catch(function (err) {
+      clearTimeout(waitTimer);
+      if (btn) btn.disabled = false;
+      if (gen !== voiceGen) return;
+      var denied = err && (err.name === "NotAllowedError" || err.name === "SecurityError" || err.name === "PermissionDeniedError");
+      rec.say(denied ? MSG_DENIED : MSG_NO_REC, true);
+    });
+  }
+  // 녹음을 멈춘다. after: 녹음이 저장된 뒤 할 일, discard: 저장하지 않고 버림
+  function stopActive(after, discard) {
+    voiceGen++;
+    var a = active;
+    if (!a) { if (after) after(); return; }
+    if (after) a.after.push(after);
+    if (discard) a.discard = true;
+    clearInterval(a.timer);
+    active = null;
+    try { if (a.mr.state !== "inactive") a.mr.stop(); else a.after.forEach(function (fn) { fn(); }); }
+    catch (e) { a.after.forEach(function (fn) { fn(); }); }
+    stopTracks(a.stream);            // 마이크를 바로 끈다
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-voice]"), makeRecorder);
+  window.addEventListener("pagehide", function () { stopActive(null, true); });
+
+  // 단계 이동
+  var current = 1;
+  function show(step) {
+    if (active) stopActive();
+    current = step;
+    for (var i = 1; i <= 5; i++) $("step" + i).classList.toggle("active", i === step);
+    $("topbar").hidden = step === 1;
+    $("stepCount").textContent = step + "/5";
+    $("stepLabel").textContent = LABELS[step - 1];
+    var dots = $("stepDots").children;
+    for (var j = 0; j < dots.length; j++) {
+      dots[j].className = j + 1 < step ? "done" : (j + 1 === step ? "now" : "");
+    }
+    if (step === 2) startChat();
+    if (step === 3) renderStep3();
+    if (step === 4) renderStep4();
+    if (step === 5) renderRecord();
+    window.scrollTo(0, 0);
+    var h = $("step" + step).querySelector("h1, h2");
+    if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); }
+  }
+
+  // ---------- 1단계 ----------
+  $("startBtn").addEventListener("click", function () {
+    var n = $("childName").value.trim();
+    if (n !== state.name) { resetFlow(n); }
+    show(2);
+  });
+  $("childName").addEventListener("keydown", function (e) { if (e.key === "Enter") $("startBtn").click(); });
+
+  // ---------- 2단계: 루미 대화 ----------
+  var chatNode = null;      // 지금 묻고 있는 질문
+  function addMsg(kind, text, voice) {
+    var box = $("chat2");
+    var row = document.createElement("div");
+    var bubble = document.createElement("p");
+    var who = document.createElement("span");
+    bubble.className = "bubble"; bubble.style.margin = "0";
+    who.className = "who";
+    if (kind === "lumi") {
+      row.className = "msg speaker lumi-line";
+      var av = document.createElement("div"); av.className = "avatar lumi";
+      var img = document.createElement("img"); img.src = "assets/lumi_TEMP.png"; img.alt = "";
+      av.appendChild(img); row.appendChild(av);
+      who.textContent = "루미";
+    } else {
+      row.className = "msg me" + (kind === "skip" ? " skip" : "");
+      who.textContent = nm();
+    }
+    bubble.appendChild(who);
+    if (text) bubble.appendChild(document.createTextNode(text));
+    if (voice) {
+      var mark = document.createElement("span"); mark.className = "voice-mark";
+      if (text) mark.style.display = "flex";
+      mark.innerHTML = ICON.mic;
+      mark.appendChild(document.createTextNode(text ? "목소리도 남겼어" : "목소리로 답했어"));
+      bubble.appendChild(mark);
+    }
+    row.appendChild(bubble);
+    box.appendChild(row);
+  }
+
+  // 콘티 장면 1·3·6 대사를 이어 붙인 순서
+  var NODES = {
+    q1: {
+      ask: function () { return "이 장면에서 포포는 어떤 마음이었을까?"; },
+      answered: function () { addMsg("lumi", "그렇게 생각했구나."); go("q2"); },
+      skipped: function () { addMsg("lumi", "괜찮아. 다음 이야기를 해 보자."); go("q2"); }
+    },
+    q2: {
+      ask: function () {
+        var prev = state.said[0];
+        return answered(prev) ? baseName() + "도 포포처럼 그런 마음이 든 적이 있니?"
+                              : baseName() + "도 포포처럼 속상했던 적이 있니?";
+      },
+      alt: "그럼 포포처럼 기뻤던 적은 언제였니?",
+      answered: function () { addMsg("lumi", "그랬구나."); go("q3"); },
+      skipped: function () { addMsg("lumi", "괜찮아. 말하고 싶을 때 들려줘."); finishChat(); }
+    },
+    q3: {
+      ask: function () { return "그때 어떤 마음이 들었니?"; },
+      answered: function () { addMsg("lumi", "그런 마음이 들었구나. 이야기해 줘서 고마워."); finishChat(); },
+      skipped: function () { addMsg("lumi", "이야기해 줘서 고마워."); finishChat(); }
+    }
+  };
+  var currentQ = "";
+  function go(key) {
+    chatNode = NODES[key];
+    currentQ = chatNode.ask();
+    addMsg("lumi", currentQ);
+    $("alt2").hidden = !chatNode.alt;
+    $("ans2").value = ""; $("ans2msg").textContent = "";
+    if (recorders.ans2) recorders.ans2.clear();
+    keepInView($("answer2"));
+  }
+  function keepInView(el) {
+    if (!el || current !== 2) return;
+    var calm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollIntoView({ block: "nearest", behavior: calm ? "auto" : "smooth" });
+  }
+  function startChat() {
+    if (state.chatStarted) return;
+    state.chatStarted = true;
+    $("chat2").textContent = "";
+    $("answer2").hidden = false; $("done2").hidden = true;
+    addMsg("lumi", "안녕, " + callName() + "! 나는 루미야. 오늘은 내 친구 포포의 이야기를 들려줄게.");
+    go("q1");
+  }
+  function finishChat() {
+    chatNode = null;
+    $("answer2").hidden = true; $("done2").hidden = false;
+    keepInView($("done2"));
+  }
+  $("say2").addEventListener("click", function () {
+    stopActive(function () {
+      if (!chatNode) return;
+      var t = $("ans2").value.trim();
+      var v = recorders.ans2.voice;
+      if (!t && !v) { $("ans2msg").textContent = "아직 아무것도 안 적었어. 목소리를 남기거나 '건너뛸래'를 눌러 줘."; $("ans2").focus(); return; }
+      v = recorders.ans2.take();
+      state.said.push({ q: currentQ, a: t || null, voice: v, by: "루미" });
+      addMsg("me", t, !!v);
+      chatNode.answered();
+    });
+  });
+  $("skip2").addEventListener("click", function () {
+    stopActive(function () {
+      if (!chatNode) return;
+      recorders.ans2.clear();
+      state.said.push({ q: currentQ, a: null, by: "루미" });
+      addMsg("skip", "(건너뛰었어)");
+      chatNode.skipped();
+    }, true);
+  });
+  $("alt2").addEventListener("click", function () {
+    if (!chatNode || !chatNode.alt) return;
+    currentQ = chatNode.alt;
+    addMsg("lumi", currentQ);
+    $("alt2").hidden = true;
+  });
+  $("toStep3").addEventListener("click", function () { show(3); });
+
+  // ---------- 3단계: 마음색 ----------
+  (function buildColors() {
+    var grid = $("colorGrid");
+    COLORS.forEach(function (c, i) {
+      var li = document.createElement("li");
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "swatch"; b.setAttribute("aria-pressed", "false");
+      b.dataset.idx = i;
+      var dot = document.createElement("span"); dot.className = "dot"; dot.style.background = c[1];
+      dot.textContent = "✓"; dot.setAttribute("aria-hidden", "true");
+      var name = document.createElement("span"); name.className = "name"; name.textContent = c[0];
+      b.appendChild(dot); b.appendChild(name);
+      b.addEventListener("click", function () { toggleColor(i, b); });
+      li.appendChild(b); grid.appendChild(li);
+    });
+  })();
+  function toggleColor(i, b) {
+    var pos = state.colors.indexOf(i);
+    if (pos === -1) state.colors.push(i); else state.colors.splice(pos, 1);
+    b.setAttribute("aria-pressed", pos === -1 ? "true" : "false");
+    updatePicked();
+  }
+  function updatePicked() {
+    var names = state.colors.map(function (i) { return COLORS[i][0]; });
+    $("pickedLine").textContent = names.length ? "고른 색: " + names.join(", ") : "";
+    var any = names.length > 0;
+    $("reasonBox").hidden = !any;
+    $("tori3b").textContent = any ? "그 색을 골랐구나. 왜 그 색이 떠올랐는지 말해 줄래?"
+                                  : toriColorQuestion();
+  }
+  function toriColorQuestion() {
+    var hadStory = state.said.some(function (s) { return answered(s) && s.q.indexOf("포포는 어떤") === -1; });
+    return (hadStory ? "그때" : "지금") + " 마음을 색으로 나타낸다면 어떤 색이 좋을까?";
+  }
+  function renderStep3() {
+    $("tori3a").textContent = "안녕, " + callName() + "! 나는 토리야. " + baseName() + "의 마음을 색으로 표현해 볼까?";
+    updatePicked();
+  }
+  $("toStep4").addEventListener("click", function () { state.reason = $("reason3").value.trim(); show(4); });
+
+  // ---------- 4단계: 마음그림 ----------
+  function renderStep4() {
+    $("drawQ").textContent = state.drawQ;
+    $("drawAnsLabel").textContent = state.drawQ;
+  }
+  function onPhoto(e) {
+    var f = e.target.files && e.target.files[0];
+    if (!f) return;
+    if (!/^image\//.test(f.type)) { $("photoArea").innerHTML = '<div class="photo-empty">사진 파일만 올릴 수 있어. 다시 골라 줘.</div>'; return; }
+    if (state.photoUrl) URL.revokeObjectURL(state.photoUrl);
+    state.photoUrl = URL.createObjectURL(f);   // 브라우저 안에서만 보여 주는 임시 주소
+    var area = $("photoArea"); area.textContent = "";
+    var box = document.createElement("div"); box.className = "photo-preview";
+    var img = document.createElement("img"); img.src = state.photoUrl; img.alt = "아이가 올린 그림 사진";
+    box.appendChild(img); area.appendChild(box);
+    e.target.value = "";
+  }
+  $("photoCam").addEventListener("change", onPhoto);
+  $("photoPick").addEventListener("change", onPhoto);
+  $("drawSwap").addEventListener("click", function () {
+    state.drawQ = state.drawQ === "그림 속에 누가 있니?" ? "무슨 일이 있었니?" : "그림 속에 누가 있니?";
+    renderStep4();
+  });
+  $("keepBtn").addEventListener("click", function () {
+    state.drawAns = $("drawAns").value.trim();
+    state.title = $("drawTitle").value.trim();
+    $("keepText").textContent = baseName() + "가 들려준 이야기를 그림과 함께 간직해 볼게.";
+    $("keepLine").hidden = false;
+    $("keepBtn").hidden = true;
+    $("toStep5").hidden = false;
+    $("toStep5").focus();
+  });
+  $("toStep5").addEventListener("click", function () {
+    state.drawAns = $("drawAns").value.trim();
+    state.title = $("drawTitle").value.trim();
+    show(5);
+  });
+
+  // ---------- 5단계: 보호자 기록 ----------
+  function renderRecord() {
+    $("recIntro").textContent = nm() + (state.name ? "(가명)" : "") + "의 오늘 기록입니다. 기록을 보시고 아이와 이야기를 나눠 보세요.";
+
+    var ph = $("recPhoto"); ph.textContent = "";
+    if (state.photoUrl) {
+      var box = document.createElement("div"); box.className = "photo-preview";
+      var img = document.createElement("img"); img.src = state.photoUrl; img.alt = "아이가 그린 마음그림 사진";
+      box.appendChild(img); ph.appendChild(box);
+    } else {
+      var p0 = document.createElement("p"); p0.className = "small"; p0.style.margin = "0";
+      p0.textContent = "올린 사진이 없습니다."; ph.appendChild(p0);
+    }
+
+    var t = $("recTitle"); t.className = state.title ? "title-text" : "small";
+    t.textContent = state.title ? "“" + state.title + "”" : "제목을 붙이지 않았습니다.";
+
+    var ul = $("recColors"); ul.textContent = "";
+    if (!state.colors.length) {
+      var li0 = document.createElement("li"); li0.className = "small"; li0.textContent = "고른 색이 없습니다."; ul.appendChild(li0);
+    }
+    state.colors.forEach(function (i) {
+      var li = document.createElement("li"); li.className = "chip";
+      var dot = document.createElement("i"); dot.style.background = COLORS[i][1]; dot.setAttribute("aria-hidden", "true");
+      li.appendChild(dot); li.appendChild(document.createTextNode(COLORS[i][0])); ul.appendChild(li);
+    });
+
+    var items = state.said.slice();
+    if (state.colors.length) items.push({ q: "왜 그 색이 떠올랐어?", a: state.reason || null, voice: recorders.reason3.voice, by: "토리" });
+    items.push({ q: state.drawQ, a: state.drawAns || null, voice: recorders.drawAns.voice, by: "토리" });
+    var said = $("recSaid"); said.textContent = "";
+    items.forEach(function (it) {
+      var li = document.createElement("li");
+      var q = document.createElement("div"); q.className = "q"; q.textContent = it.by + "의 질문 · " + it.q;
+      var a = document.createElement("div"); a.className = "a" + (it.a ? "" : " none");
+      a.textContent = it.a ? "“" + it.a + "”" : (it.voice ? "목소리로 답했습니다." : "건너뛰었습니다.");
+      li.appendChild(q); li.appendChild(a);
+      if (it.voice) li.appendChild(listenButton(it.voice));
+      said.appendChild(li);
+    });
+  }
+
+  function listenButton(v) {
+    var wrap = document.createElement("div");
+    var audio = document.createElement("audio");
+    audio.preload = "metadata"; audio.src = v.url; audio.className = "rec-audio";
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "btn btn-secondary listen";
+    b.setAttribute("aria-label", "아이 목소리 듣기 (" + v.sec + "초)");
+    var label = document.createElement("span"); label.textContent = "듣기 (" + v.sec + "초)";
+    b.innerHTML = ICON.play; b.appendChild(label);
+    function reset() { label.textContent = "듣기 (" + v.sec + "초)"; }
+    audio.addEventListener("ended", reset); audio.addEventListener("pause", reset);
+    b.addEventListener("click", function () {
+      if (!audio.paused) { audio.pause(); return; }
+      Array.prototype.forEach.call(document.querySelectorAll("audio.rec-audio"), function (x) { if (x !== audio) x.pause(); });
+      label.textContent = "멈추기";
+      var pr = audio.play(); if (pr && pr.catch) pr.catch(reset);
+    });
+    wrap.appendChild(audio); wrap.appendChild(b);
+    return wrap;
+  }
+
+  // ---------- 처음으로 / 이전 ----------
+  function resetFlow(name) {
+    stopActive(null, true);
+    Object.keys(recorders).forEach(function (k) { recorders[k].clear(); });
+    Array.prototype.forEach.call(document.querySelectorAll("audio.rec-audio"), function (x) { x.pause(); x.removeAttribute("src"); x.load(); });
+    $("recSaid").textContent = "";
+    voiceUrls.splice(0).forEach(function (u) { URL.revokeObjectURL(u); });
+    if (state.photoUrl) URL.revokeObjectURL(state.photoUrl);
+    state = freshState(name);
+    $("chat2").textContent = "";
+    $("ans2").value = ""; $("ans2msg").textContent = "";
+    $("reason3").value = ""; $("drawAns").value = ""; $("drawTitle").value = "";
+    $("photoArea").innerHTML = '<div class="photo-empty">다 그리면 그림 사진을 찍어 줘.</div>';
+    $("keepLine").hidden = true; $("keepBtn").hidden = false; $("toStep5").hidden = true;
+    Array.prototype.forEach.call(document.querySelectorAll(".swatch"), function (b) { b.setAttribute("aria-pressed", "false"); });
+  }
+  $("restartBtn").addEventListener("click", function () {
+    resetFlow("");
+    $("childName").value = "";
+    show(1);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-back]"), function (b) {
+    b.addEventListener("click", function () { show(Number(b.getAttribute("data-back"))); });
+  });
+})();
+</script>
+</body>
+</html>
