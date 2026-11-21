@@ -1,4 +1,4 @@
-이 폴더의 lib/ 파일은 아래 공개 소프트웨어를 그대로 담은 것입니다 (둘 다 MIT 라이선스).
+이 폴더(ar/)의 lib/ 파일은 아래 공개 소프트웨어를 그대로 담은 것입니다 (둘 다 MIT 라이선스).
 - MindAR v1.2.5 (https://github.com/hiukim/mind-ar-js) — mindar-image-aframe.prod.js
 - A-Frame v1.5.0 (https://github.com/aframevr/aframe) — aframe-v1.5.0.min.js
 

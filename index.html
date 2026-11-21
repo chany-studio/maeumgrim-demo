@@ -2,438 +2,540 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="robots" content="noindex">
+<meta name="robots" content="noindex, nofollow">
 <title>마음그림 AI 체험 (시연용)</title>
 <style>
-  /* 색: 로고에서 뽑은 분홍(마음그림 글자)·청록(AI 글자)·연두(새싹)·노랑(토리 몸) */
+  /* 색: 로고의 분홍(마음그림 글자)·청록(AI 글자)·연두(새싹)·노랑(토리 몸)에서 가져옴 */
   :root {
-    --bg: #fffaf3;
-    --surface: #ffffff;
-    --ink: #3b2f3a;          /* 본문 글자: 바탕 #fffaf3 대비 12.2:1 */
-    --muted: #5f5560;        /* 보조 글자: 바탕 대비 6.8:1 */
-    --pink: #c2185b;         /* 주 버튼 바탕: 흰 글자 대비 5.9:1 (로고 분홍 #d4005a를 조금 어둡게) */
+    --ink: #3b2f3a;           /* 본문 글자 */
+    --muted: #5f5560;         /* 보조 글자 */
+    --pink: #c2185b;          /* 아이 화면 주 버튼(흰 글자 5.9:1) */
     --pink-dark: #9c1248;
     --pink-soft: #fde7f1;
-    --teal: #0e6e74;         /* 청록 글자·테두리: 흰 바탕 대비 6.0:1 (로고 청록 #008890을 조금 어둡게) */
+    --teal: #0e6e74;          /* 청록 글자·테두리·보호자 화면 포인트(흰 바탕 6.0:1) */
+    --teal-dark: #0b4f53;
     --teal-soft: #e0f4f4;
-    --green: #78b828;        /* 장식용 연두(글자에 쓰지 않음) */
+    --green: #78b828;         /* 장식용 연두(글자에 쓰지 않음) */
     --green-text: #2e6b12;
-    --green-soft: #e9f7d8;
-    --sun: #f8c450;          /* 장식용 노랑(토리 몸 색) */
-    --sun-soft: #fff1c9;
-    --sim-ink: #7a2d00;      /* 시뮬레이션 표시 글자: #fff1c9 대비 8.5:1 */
-    --line: #e6dccf;
-    --radius: 22px;
+    --sun: #f8c450;           /* 장식용 노랑 */
+    --sim-ink: #7a2d00;
+    /* 아이 화면 배경: 로고 색을 아주 연하게 */
+    --bg-start: #fff4d6;
+    --bg-lumi: #e3f4f6;
+    --bg-tori: #eef6e1;
+    --bg-draw: #fce9f0;
+    /* 보호자 화면(알림장) */
+    --p-bg: #f3f4f6;
+    --p-card: #ffffff;
+    --p-line: #e3e6ea;
+    --p-ink: #2b2f33;
+    --p-muted: #5b636b;
     --font: "Apple SD Gothic Neo", "AppleSDGothicNeo", "Malgun Gothic", "맑은 고딕", sans-serif;
   }
   * { box-sizing: border-box; }
-  [hidden] { display: none !important; }   /* 버튼·상자에 준 display 값이 hidden을 덮어쓰지 않게 */
-  html { -webkit-text-size-adjust: 100%; }
+  [hidden] { display: none !important; }
+  html { -webkit-text-size-adjust: 100%; background: var(--bg-start); }
   body {
-    margin: 0; background: var(--bg); color: var(--ink);
-    font-family: var(--font); font-size: 18px; line-height: 1.6;
-    word-break: keep-all; overflow-wrap: anywhere;
+    margin: 0; color: var(--ink); font-family: var(--font); font-size: 18px; line-height: 1.6;
+    word-break: keep-all; overflow-wrap: anywhere; min-height: 100vh; background: var(--bg-start);
+    transition: background-color .3s;
   }
+  body[data-screen="lumi"] { background: var(--bg-lumi); }
+  body[data-screen="tori"] { background: var(--bg-tori); }
+  body[data-screen="draw"] { background: var(--bg-draw); }
+  body[data-screen="parent"] { background: var(--p-bg); color: var(--p-ink); }
+  /* AR 카메라가 켜지면 앱을 숨기고 바탕을 비운다(카메라 영상이 가려지지 않게) */
+  html.ar-open .app { display: none; }
+  html.ar-live, html.ar-live body { background: #000 !important; }
+  html.ar-live body { background: transparent !important; }
   img { max-width: 100%; display: block; }
   button, input, textarea { font: inherit; color: inherit; }
-  .wrap { max-width: 1000px; margin: 0 auto; padding: 0 16px; }
-
-  /* 머리 영역 */
-  header.top { background: var(--surface); border-bottom: 2px solid var(--line); position: sticky; top: 0; z-index: 5; }
-  header.top .wrap { display: flex; align-items: center; gap: 12px; min-height: 64px; flex-wrap: wrap; padding-top: 6px; padding-bottom: 6px; }
-  header.top img.mini { height: 44px; width: auto; }
-  .steps { display: flex; align-items: center; gap: 8px; margin-left: auto; }
-  .steps .count { font-weight: 800; color: var(--teal); white-space: nowrap; }
-  .steps .label { font-weight: 700; white-space: nowrap; }
-  .dots { display: flex; gap: 6px; list-style: none; margin: 0; padding: 0; }
-  .dots li { width: 14px; height: 14px; border-radius: 50%; background: var(--line); }
-  .dots li.done { background: var(--green); }
-  .dots li.now { background: var(--pink); transform: scale(1.25); }
-
-  /* 표시 띠: 시연 예시 / 시뮬레이션 */
-  .notice {
-    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-    margin: 16px 0 0; padding: 12px 16px; border-radius: 16px; font-size: 16px; line-height: 1.45;
-  }
-  .notice strong { font-size: 18px; }
-  .notice.demo { background: var(--teal-soft); border: 2px solid var(--teal); color: #0b4f53; }
-  .notice.sim { background: var(--sun-soft); border: 2px solid #c98a00; color: var(--sim-ink); }
-  .tag {
-    display: inline-block; font-weight: 800; font-size: 15px; padding: 3px 10px; border-radius: 999px;
-    background: var(--teal); color: #fff; white-space: nowrap;
-  }
-
-  main { padding-bottom: 48px; }
-  section.step { display: none; padding-top: 4px; }
-  section.step.active { display: block; animation: fade .25s ease-out; }
-  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-  @media (prefers-reduced-motion: reduce) {
-    section.step.active, .chat .msg { animation: none !important; }
-    .dots li.now { transform: none; }
-  }
-  h1, h2, h3 { line-height: 1.35; margin: 0; }
-  h2.step-title { font-size: 24px; margin: 20px 0 12px; }
-
-  .card { background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); padding: 20px; }
-  .stack > * + * { margin-top: 16px; }
-
-  /* 버튼: 최소 높이 56px(아이 손가락 기준), 주 버튼은 화면마다 하나 */
-  .btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    min-height: 56px; padding: 10px 24px; border-radius: 999px; border: 3px solid transparent;
-    font-size: 20px; font-weight: 800; cursor: pointer; text-decoration: none; touch-action: manipulation;
-  }
-  .btn-primary { background: var(--pink); color: #fff; box-shadow: 0 4px 0 var(--pink-dark); }
-  .btn-primary:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--pink-dark); }
-  .btn-secondary { background: var(--surface); color: var(--teal); border-color: var(--teal); }
-  .btn-secondary:active { background: var(--teal-soft); }
-  .btn-quiet { background: transparent; color: var(--muted); border-color: var(--line); font-size: 18px; min-height: 52px; }
-  .btn-block { width: 100%; }
-  .actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
-  .actions.end { justify-content: space-between; margin-top: 24px; }
   :focus-visible { outline: 4px solid var(--teal); outline-offset: 3px; }
   [tabindex="-1"]:focus { outline: none; }
+  .visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+  h1, h2, h3 { line-height: 1.35; margin: 0; }
+  p { margin: 0; }
 
-  /* 입력 */
-  label.field-label { display: block; font-weight: 800; font-size: 19px; margin-bottom: 6px; }
-  .hint { font-size: 16px; color: var(--muted); margin: 4px 0 0; }
+  /* ---------- 버튼 ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 56px; padding: 10px 22px; border-radius: 999px; border: 3px solid transparent;
+    font-size: 19px; font-weight: 800; cursor: pointer; text-decoration: none; touch-action: manipulation; text-align: center;
+  }
+  .btn-big { min-height: 64px; font-size: 22px; padding: 12px 28px; }
+  .btn-block { width: 100%; }
+  .btn-primary { background: var(--pink); color: #fff; box-shadow: 0 5px 0 var(--pink-dark); }
+  .btn-primary:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--pink-dark); }
+  .btn-secondary { background: #fff; color: var(--teal); border-color: var(--teal); }
+  .btn-secondary:active { background: var(--teal-soft); }
+  .btn-quiet { background: rgba(255,255,255,.7); color: var(--muted); border-color: rgba(59,47,58,.18); font-size: 17px; min-height: 52px; }
+  .btn[disabled] { opacity: .6; cursor: default; }
+  .icon { width: 24px; height: 24px; flex: 0 0 auto; }
+
+  /* ---------- 아이 화면 머리(이전 + 작은 길) ---------- */
+  .kid-head { display: flex; align-items: center; gap: 12px; padding: 12px 0 4px; }
+  .round-back {
+    width: 52px; height: 52px; flex: 0 0 auto; border-radius: 50%; border: 3px solid rgba(59,47,58,.16);
+    background: #fff; color: var(--ink); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .trail { flex: 1; min-width: 0; }
+  .trail ol { list-style: none; margin: 0; padding: 0; display: flex; align-items: center; justify-content: space-between; position: relative; }
+  .trail ol::before {        /* 점선 길 */
+    content: ""; position: absolute; left: 12px; right: 12px; top: 50%; border-top: 4px dotted rgba(59,47,58,.22); transform: translateY(-50%);
+  }
+  .trail li {
+    position: relative; width: 26px; height: 26px; border-radius: 50%; background: #fff; border: 3px solid rgba(59,47,58,.25);
+    display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 900; color: transparent;
+  }
+  .trail li.done { background: var(--green-text); border-color: var(--green-text); color: #fff; }   /* 흰 ✓ 대비 6.5:1 */
+  .trail li.now { width: 38px; height: 38px; background: var(--pink); border-color: #fff; color: #fff; box-shadow: 0 0 0 3px var(--pink); font-size: 17px; }
+  .trail .where { display: block; text-align: center; font-size: 14px; font-weight: 800; color: var(--muted); margin-top: 2px; }
+
+  /* 시연 예시 표시 */
+  .demo-pill { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 8px 0 0; font-size: 14px; color: var(--teal-dark); line-height: 1.4; }
+  .demo-pill .tag { background: var(--teal); color: #fff; font-weight: 800; font-size: 15px; border-radius: 999px; padding: 4px 12px; white-space: nowrap; }
+
+  /* ---------- 길잡이 캐릭터 + 말풍선 ---------- */
+  .guide { display: flex; align-items: flex-end; gap: 10px; margin-top: 16px; }
+  .portrait {
+    flex: 0 0 auto; width: 104px; height: 104px; border-radius: 50%; background: #fff; border: 5px solid #fff;
+    box-shadow: 0 0 0 3px rgba(59,47,58,.12); overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative;
+  }
+  .portrait img { width: 90%; height: 90%; object-fit: contain; }
+  .portrait.lumi { box-shadow: 0 0 0 4px #6fc3d6; }
+  .portrait.tori { box-shadow: 0 0 0 4px var(--sun); }
+  .nametag {
+    position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff;
+    font-size: 13px; font-weight: 800; padding: 1px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .say {
+    position: relative; flex: 1; min-width: 0; background: #fff; border-radius: 26px 26px 26px 8px; padding: 14px 18px;
+    box-shadow: 0 3px 0 rgba(59,47,58,.08);
+  }
+  .say .pre { display: block; font-size: 18px; color: var(--muted); font-weight: 600; }
+  .say .main { display: block; font-size: 24px; font-weight: 800; line-height: 1.45; }
+  .say .sub { display: block; font-size: 17px; font-weight: 600; margin-top: 4px; }
+  .talk { animation: talk .45s ease-out; }
+  .talk-av { animation: hop .45s ease-out; }
+  @keyframes talk { 0% { transform: scale(.96); } 55% { transform: scale(1.03); } 100% { transform: none; } }
+  @keyframes hop { 0%, 100% { transform: none; } 40% { transform: translateY(-8px); } }
+
+  .panel { background: #fff; border-radius: 26px; padding: 18px; margin-top: 16px; box-shadow: 0 3px 0 rgba(59,47,58,.06); }
+  .panel + .panel { margin-top: 14px; }
+  .field-label { display: block; font-weight: 800; font-size: 19px; margin-bottom: 6px; }
+  .hint { font-size: 15px; color: var(--muted); margin-top: 6px; }
   .hint.adult::before { content: "보호자 안내 · "; font-weight: 800; color: var(--teal); }
   input[type="text"], textarea {
-    width: 100%; min-height: 56px; padding: 12px 16px; border: 2px solid #b9ad9f; border-radius: 16px;
-    background: #fff; font-size: 20px;
+    width: 100%; min-height: 56px; padding: 12px 16px; border: 2px solid #b9ad9f; border-radius: 18px; background: #fff; font-size: 20px;
   }
-  textarea { min-height: 96px; resize: vertical; line-height: 1.5; }
+  textarea { min-height: 88px; resize: vertical; line-height: 1.5; }
   input[type="text"]:focus, textarea:focus { border-color: var(--teal); }
-  .inline-msg { color: var(--pink-dark); font-weight: 700; font-size: 16px; margin: 6px 0 0; min-height: 1em; }
+  .inline-msg { color: var(--pink-dark); font-weight: 700; font-size: 16px; margin-top: 6px; }
+  .inline-msg:empty { display: none; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px; }
+  .row.between { justify-content: space-between; }
+  .me-echo { margin-top: 12px; margin-left: auto; max-width: 85%; background: var(--pink-soft); border-radius: 22px 22px 8px 22px; padding: 10px 16px; font-weight: 700; width: fit-content; }
+  .me-echo .who { display: block; font-size: 13px; color: var(--pink-dark); font-weight: 800; }
+  .me-echo.skip { background: #f1ede8; color: var(--muted); }
 
-  /* 시작 화면 */
-  .hero { text-align: center; padding: 20px 0 8px; }
-  .hero .logo-box { background: #fff; border-radius: 28px; border: 2px solid var(--line); padding: 8px; max-width: 520px; margin: 0 auto; }
-  .hero h1 { font-size: 28px; margin-top: 18px; }
-  .hero p { margin: 8px 0 0; color: var(--muted); }
-  .start-card { max-width: 520px; margin: 20px auto 0; }
-  .privacy { font-size: 16px; color: var(--muted); background: var(--green-soft); border-radius: 14px; padding: 12px 14px; }
+  /* ---------- 시작 화면 ---------- */
+  .start { padding-top: 20px; padding-bottom: 40px; max-width: 560px; margin: 0 auto; }
+  .start .logo-box { background: #fff; border-radius: 32px; padding: 10px; box-shadow: 0 4px 0 rgba(59,47,58,.07); }
+  .start h1 { font-size: 30px; text-align: center; margin-top: 18px; }
+  .start .lead { text-align: center; color: var(--muted); margin-top: 6px; }
+  .doors { display: grid; gap: 14px; margin-top: 18px; }
+  .door-note { font-size: 15px; color: var(--muted); text-align: center; margin-top: -6px; }
+  .privacy { font-size: 15px; color: var(--muted); background: rgba(255,255,255,.75); border-radius: 16px; padding: 12px 14px; margin-top: 16px; }
 
-  /* 캐릭터와 말풍선 */
-  .speaker { display: flex; gap: 12px; align-items: flex-start; }
-  .avatar {
-    flex: 0 0 auto; width: 76px; height: 76px; border-radius: 50%; background: #fff;
-    border: 3px solid var(--line); overflow: hidden; display: flex; align-items: center; justify-content: center;
-  }
-  .avatar img { width: 88%; height: 88%; object-fit: contain; }
-  .avatar.lumi { border-color: #6fc3d6; }
-  .avatar.tori { border-color: var(--sun); }
-  .bubble {
-    position: relative; background: #fff; border: 2px solid var(--line); border-radius: 20px;
-    padding: 12px 16px; font-size: 21px; line-height: 1.5; font-weight: 600; max-width: 100%;
-  }
-  .who { display: block; font-size: 15px; font-weight: 800; color: var(--teal); margin-bottom: 2px; }
-  .who.tori { color: #8a5a00; }
-
-  /* 대화 기록 */
-  .chat { display: flex; flex-direction: column; gap: 12px; }
-  .chat .msg { animation: fade .25s ease-out; }
-  .chat .me { align-self: flex-end; max-width: 85%; }
-  .chat .me .bubble { background: var(--pink-soft); border-color: #f3bcd3; font-weight: 600; }
-  .chat .me .who { color: var(--pink-dark); text-align: right; }
-  .chat .skip .bubble { background: #f4f1ec; color: var(--muted); font-weight: 600; }
-  .chat .lumi-line .avatar, .chat .tori-line .avatar { width: 60px; height: 60px; }
-  .answer-box { margin-top: 16px; border-top: 2px dashed var(--line); padding-top: 16px; }
-
-  /* 그림책 장면 자리표시 */
+  /* ---------- 장면 자리 ---------- */
   .scene {
-    aspect-ratio: 4 / 3; border: 3px dashed #b9ad9f; border-radius: var(--radius); background: repeating-linear-gradient(45deg, #fbf3e6, #fbf3e6 14px, #fff8ee 14px, #fff8ee 28px);
-    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 16px;
+    margin: 14px 0 0; aspect-ratio: 16 / 10; border-radius: 26px; border: 3px dashed rgba(59,47,58,.28);
+    background: rgba(255,255,255,.6); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 12px;
   }
-  .scene strong { font-size: 22px; }
-  .scene span { color: var(--muted); font-size: 16px; }
+  .scene strong { font-size: 20px; }
+  .scene span { color: var(--muted); font-size: 15px; }
 
-  /* 마음색 */
-  .colors { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 10px; list-style: none; padding: 0; margin: 0; }
+  /* AR 권유 카드 */
+  .ar-offer .note { font-size: 15px; color: var(--muted); margin-top: 10px; }
+
+  /* ---------- 마음색 ---------- */
+  .colors { display: grid; grid-template-columns: repeat(auto-fill, minmax(74px, 1fr)); gap: 8px; list-style: none; padding: 0; margin: 0; }
   .swatch {
-    width: 100%; min-height: 104px; background: transparent; border: 3px solid transparent; border-radius: 18px;
+    width: 100%; min-height: 104px; background: transparent; border: 3px solid transparent; border-radius: 22px;
     display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px 2px; cursor: pointer; touch-action: manipulation;
   }
   .swatch .dot {
-    width: 60px; height: 60px; border-radius: 50%; border: 3px solid rgba(0,0,0,.18);
+    width: 62px; height: 62px; border-radius: 50%; border: 3px solid rgba(0,0,0,.16);
     display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 900; color: transparent;
   }
   .swatch .name { font-size: 16px; font-weight: 700; }
-  .swatch[aria-pressed="true"] { border-color: var(--ink); background: #fff; }
+  .swatch[aria-pressed="true"] { border-color: var(--ink); background: #fffdf8; }
   .swatch[aria-pressed="true"] .dot { color: #fff; text-shadow: 0 0 3px #000, 0 0 2px #000; box-shadow: 0 0 0 4px #fff, 0 0 0 7px var(--ink); }
   .swatch[aria-pressed="true"] .name { font-weight: 900; text-decoration: underline; text-underline-offset: 4px; }
-  .picked-line { font-size: 17px; color: var(--muted); margin: 12px 0 0; min-height: 1.6em; }
+  .picked-line { font-size: 16px; color: var(--muted); margin-top: 10px; }
+  .picked-line:empty { display: none; }
 
-  /* 사진 올리기 */
-  .photo-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
-  .photo-buttons label { cursor: pointer; }
-  .visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  .photo-preview { border-radius: 18px; overflow: hidden; border: 2px solid var(--line); background: #fff; }
-  .photo-preview img { width: 100%; max-height: 360px; object-fit: contain; background: #fff; }
-  .photo-empty { border: 3px dashed #b9ad9f; border-radius: 18px; padding: 28px 16px; text-align: center; color: var(--muted); }
+  /* ---------- 사진 ---------- */
+  .photo-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .photo-buttons label { cursor: pointer; font-size: 18px; padding: 10px 12px; }
+  .photo-preview { border-radius: 20px; overflow: hidden; background: #fff; border: 2px solid rgba(59,47,58,.12); margin-top: 12px; }
+  .photo-preview img { width: 100%; max-height: 340px; object-fit: contain; background: #fff; }
+  .photo-empty { border: 3px dashed rgba(59,47,58,.25); border-radius: 20px; padding: 22px 12px; text-align: center; color: var(--muted); margin-top: 12px; }
+  .mini-guide { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+  .mini-guide img { width: 48px; height: 48px; border-radius: 50%; background: #fff; object-fit: contain; border: 3px solid var(--sun); }
+  .mini-guide p { font-size: 20px; font-weight: 800; }
 
-  /* 목소리 남기기 */
+  /* ---------- 칭찬 연출(별·하트) ---------- */
+  .burst { position: fixed; left: 50%; top: 32%; width: 0; height: 0; z-index: 200; pointer-events: none; }
+  .burst i { position: absolute; left: -9px; top: -9px; width: 18px; height: 18px; opacity: 0; animation: fly .95s ease-out forwards; }
+  .burst i.star { clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+  .burst i.heart { clip-path: polygon(50% 92%, 8% 50%, 4% 30%, 14% 12%, 32% 8%, 50% 24%, 68% 8%, 86% 12%, 96% 30%, 92% 50%); }
+  @keyframes fly {
+    0% { transform: translate(0,0) scale(.4) rotate(0deg); opacity: 0; }
+    15% { opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(1.15) rotate(var(--rot)); opacity: 0; }
+  }
+
+  /* ---------- 목소리 남기기 ---------- */
   .voice { margin-top: 10px; }
   .voice-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-  .voice .btn { font-size: 18px; min-height: 52px; padding: 8px 18px; }
-  .icon { width: 22px; height: 22px; flex: 0 0 auto; }
   .voice-live { display: inline-flex; align-items: center; gap: 8px; font-weight: 800; color: #b71c1c; font-size: 18px; }
   .rec-dot { width: 16px; height: 16px; border-radius: 50%; background: #d32f2f; display: inline-block; animation: blink 1s steps(2, start) infinite; }
   @keyframes blink { to { opacity: .25; } }
   .voice-done { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 8px; font-weight: 700; color: var(--green-text); }
   .voice-mark { display: inline-flex; align-items: center; gap: 6px; }
-  .said .listen { margin-top: 8px; min-height: 48px; font-size: 17px; padding: 6px 16px; }
-  @media (prefers-reduced-motion: reduce) { .rec-dot { animation: none; } }
 
-  /* 보호자 기록 */
-  .record h3 { font-size: 18px; color: var(--teal); margin-bottom: 6px; }
-  .record .title-text { font-size: 24px; font-weight: 800; }
+  /* ---------- 보호자 화면(알림장) ---------- */
+  .p-bar { background: var(--teal); color: #fff; position: sticky; top: 0; z-index: 5; }
+  .p-bar .wrap { display: flex; align-items: center; gap: 10px; min-height: 60px; }
+  .p-bar button { width: 48px; height: 48px; border-radius: 50%; border: 0; background: rgba(255,255,255,.16); color: #fff; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+  .p-bar h2 { font-size: 20px; flex: 1; }
+  .p-bar .date { font-size: 15px; font-weight: 700; white-space: nowrap; }
+  .p-body { padding-top: 12px; padding-bottom: 40px; max-width: 720px; }
+  .sim-note { background: #fff7e0; border: 1px solid #e0b64a; color: var(--sim-ink); border-radius: 12px; padding: 10px 14px; font-size: 15px; line-height: 1.5; }
+  .sim-note strong { display: block; font-size: 16px; }
+  .p-intro { font-size: 16px; color: var(--p-muted); margin: 14px 2px 10px; }
+  .p-card { background: var(--p-card); border: 1px solid var(--p-line); border-radius: 14px; padding: 16px; margin-top: 12px; }
+  .p-card h3 { font-size: 15px; color: var(--teal); font-weight: 800; margin-bottom: 8px; }
+  .p-photo { padding: 0; overflow: hidden; }
+  .p-photo img { width: 100%; max-height: 420px; object-fit: contain; background: #fafafa; }
+  .p-photo .noimg { padding: 40px 16px; text-align: center; color: var(--p-muted); background: #fafafa; }
+  .p-photo .cap { padding: 12px 16px; border-top: 1px solid var(--p-line); }
+  .p-photo .cap .lab { font-size: 14px; color: var(--p-muted); }
+  .p-photo .cap .ttl { font-size: 22px; font-weight: 800; }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 0; }
-  .chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 6px; border: 2px solid var(--line); border-radius: 999px; background: #fff; font-weight: 700; }
-  .chip i { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(0,0,0,.2); display: inline-block; }
+  .chip { display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px 5px 5px; border: 1px solid var(--p-line); border-radius: 999px; background: #fff; font-weight: 700; font-size: 16px; }
+  .chip i { width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(0,0,0,.2); display: inline-block; }
+  .p-small { font-size: 14px; color: var(--p-muted); margin-top: 10px; }
   .said { list-style: none; padding: 0; margin: 0; }
-  .said li { padding: 12px 0; border-top: 1px solid var(--line); }
+  .said li { padding: 12px 0; border-top: 1px solid var(--p-line); }
   .said li:first-child { border-top: 0; padding-top: 0; }
-  .said .q { font-size: 15px; color: var(--muted); }
-  .said .a { font-size: 19px; font-weight: 700; }
-  .said .a.none { color: var(--muted); font-weight: 600; }
-  .tips { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; counter-reset: tip; }
-  .tips li { background: var(--green-soft); border-radius: 18px; padding: 14px 16px; }
-  .tips li b { display: block; font-size: 19px; color: var(--green-text); }
-  .tips li b::before { counter-increment: tip; content: "TIP " counter(tip) "  "; }
-  .tips .ex { display: block; margin-top: 6px; font-weight: 700; }
-  .farewell { background: var(--pink-soft); border-radius: var(--radius); padding: 16px; }
-  .farewell .speaker + .speaker { margin-top: 12px; }
-  .small { font-size: 15px; color: var(--muted); }
+  .said .q { font-size: 14px; color: var(--p-muted); }
+  .said .a { font-size: 18px; font-weight: 700; }
+  .said .a.none { color: var(--p-muted); font-weight: 600; }
+  .listen { margin-top: 8px; min-height: 48px; font-size: 16px; padding: 6px 16px; border-width: 2px; }
+  .tips { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; counter-reset: tip; }
+  .tips li { border-left: 4px solid var(--teal); background: #f7fafa; border-radius: 4px 10px 10px 4px; padding: 10px 14px; font-size: 16px; }
+  .tips li b { display: block; font-size: 17px; color: var(--teal-dark); }
+  .tips li b::before { counter-increment: tip; content: counter(tip) ". "; }
+  .tips .ex { display: block; margin-top: 4px; font-weight: 700; }
+  .bye .line { display: flex; gap: 10px; align-items: center; margin-top: 8px; font-size: 16px; }
+  .bye .line img { width: 44px; height: 44px; border-radius: 50%; object-fit: contain; border: 1px solid var(--p-line); background: #fff; }
+  .p-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between; margin-top: 18px; }
+  .btn-teal { background: var(--teal); color: #fff; border-radius: 12px; min-height: 52px; }
+  .btn-plain { background: #fff; color: var(--p-ink); border: 1px solid var(--p-line); border-radius: 12px; min-height: 52px; font-size: 17px; }
+  body[data-screen="parent"] .btn-secondary { border-radius: 12px; }
 
-  .grid-2 { display: grid; gap: 16px; }
+  /* ---------- AR ---------- */
+  #arLayer { position: fixed; inset: 0; z-index: 100; isolation: isolate; }
+  #arStage { position: absolute; inset: 0; overflow: hidden; }
+  #arStage a-scene { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .ar-intro { position: absolute; inset: 0; z-index: 2; overflow-y: auto; background: var(--bg-lumi); padding: 16px 16px 32px; }
+  .ar-intro .inner { max-width: 560px; margin: 0 auto; }
+  .ar-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ar-tags span { font-size: 14px; font-weight: 800; padding: 4px 12px; border-radius: 999px; }
+  .ar-tags .real { background: var(--teal); color: #fff; }
+  .ar-tags .test { background: #fff; color: var(--pink-dark); border: 2px solid var(--pink-dark); }
+  .ar-intro h2 { font-size: 26px; margin: 12px 0 4px; }
+  .ar-intro ol { padding-left: 22px; margin: 10px 0 0; font-size: 16px; }
+  .ar-intro .note { font-size: 15px; background: rgba(255,255,255,.8); border-radius: 16px; padding: 12px 14px; margin-top: 12px; }
+  .ar-hud { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+  .ar-hud > * { pointer-events: auto; }
+  .ar-top { position: absolute; top: calc(10px + env(safe-area-inset-top)); left: 10px; right: 10px; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .ar-badge { background: rgba(255,255,255,.95); color: var(--teal-dark); border-radius: 10px; padding: 6px 10px; font-size: 14px; font-weight: 800; }
+  .ar-bottom { position: absolute; left: 12px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom)); display: grid; gap: 8px; justify-items: center; }
+  .ar-status { width: 100%; background: rgba(255,255,255,.95); border-radius: 16px; padding: 12px 14px; font-size: 18px; text-align: center; font-weight: 800; }
+  .ar-target { position: absolute; inset: 0; z-index: 4; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 16px; text-align: center; }
+  .ar-target img { max-width: 100%; max-height: 66vh; }
+
   @media (min-width: 860px) {
-    body { font-size: 19px; }
-    .grid-2 { grid-template-columns: 1fr 1fr; align-items: start; gap: 24px; }
+    .kid-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+    .kid-grid .scene { margin-top: 16px; }
     .colors { grid-template-columns: repeat(6, 1fr); }
-    h2.step-title { font-size: 28px; }
-    .avatar { width: 92px; height: 92px; }
-    #step2 .scene { position: sticky; top: 96px; }
+    .portrait { width: 124px; height: 124px; }
+    .say .main { font-size: 26px; }
   }
-  @media (max-width: 420px) {
-    .steps { margin-left: 0; width: 100%; justify-content: space-between; }
-    header.top img.mini { height: 38px; }
-    .btn { font-size: 19px; padding: 10px 18px; }
-    .avatar { width: 64px; height: 64px; }
-    .bubble { font-size: 20px; }
+  @media (max-width: 400px) {
+    .portrait { width: 88px; height: 88px; }
+    .say .main { font-size: 22px; }
+    .btn-big { font-size: 20px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
   }
 </style>
 </head>
-<body>
+<body data-screen="start">
 
-<header class="top" id="topbar" hidden>
-  <div class="wrap">
-    <img class="mini" src="assets/logo.png" alt="마음그림 AI">
-    <div class="steps" aria-live="polite">
-      <span class="count" id="stepCount">2/5</span>
-      <span class="label" id="stepLabel">루미와 이야기</span>
-      <ol class="dots" id="stepDots" aria-hidden="true"><li></li><li></li><li></li><li></li><li></li></ol>
-    </div>
-  </div>
-</header>
-
-<main class="wrap">
+<div class="app">
 
   <!-- 1단계: 시작 -->
-  <section class="step active" id="step1" aria-labelledby="s1title" data-label="시작">
-    <div class="hero">
+  <section class="step active" id="step1" aria-labelledby="s1title">
+    <div class="wrap start">
       <div class="logo-box"><img src="assets/logo.png" alt="마음그림 AI 로고. 왼쪽에 벌새, 오른쪽에 연필을 든 새싹 머리 로봇 토리"></div>
       <h1 id="s1title">마음그림 AI 체험</h1>
-      <p>그림책을 보고 루미·토리와 이야기한 다음 마음을 그림으로 남겨요.</p>
-      <p class="small">단계 1/5 · 시작</p>
-    </div>
-    <div class="card start-card stack">
-      <div>
+      <p class="lead">그림책을 보고 루미·토리와 이야기한 다음 마음을 그림으로 남겨요.</p>
+      <div class="panel">
         <label class="field-label" for="childName">아이 이름(가명)</label>
         <input type="text" id="childName" maxlength="10" autocomplete="off" placeholder="아이 이름(가명)">
         <p class="hint adult">실제 이름 대신 가명을 적어 주세요. 비워 두면 '친구'라고 부릅니다.</p>
       </div>
+      <div class="doors">
+        <button type="button" class="btn btn-primary btn-big btn-block" id="startBtn">마음그림 이야기 시작</button>
+        <button type="button" class="btn btn-secondary btn-big btn-block" id="arDoor">그림책 AR</button>
+        <p class="door-note">그림책 AR은 카메라로 그림을 비추는 체험입니다.</p>
+      </div>
       <p class="privacy">시연용 화면입니다. 적은 내용과 사진, 목소리는 이 기기에서만 잠깐 보이거나 들릴 뿐 어디에도 저장하거나 보내지 않습니다. 새로고침하면 모두 지워집니다.</p>
-      <button type="button" class="btn btn-primary btn-block" id="startBtn">시작하기</button>
     </div>
   </section>
 
   <!-- 2단계: 루미 감정 질문 -->
-  <section class="step" id="step2" aria-labelledby="s2title" data-label="루미와 이야기">
-    <div class="notice demo" role="note"><span class="tag">AI 대화 기능 시연 예시</span> 질문이 미리 정해 둔 순서대로 나오는 화면입니다. 실시간 AI는 연결되어 있지 않습니다.</div>
-    <h2 class="step-title" id="s2title">루미와 이야기해요</h2>
-    <div class="grid-2">
-      <figure class="scene" style="margin:0" aria-label="그림책 장면 자리표시">
-        <strong>그림책 장면 4 자리</strong>
-        <span>(원화 받으면 교체)</span>
-        <span>《포포의 마음색 일기》</span>
-      </figure>
-      <div class="card">
-        <div class="chat" id="chat2" aria-live="polite"></div>
-        <div class="answer-box" id="answer2">
-          <label class="field-label" for="ans2">하고 싶은 말 <span class="small">(안 적어도 괜찮아)</span></label>
-          <textarea id="ans2" maxlength="200"></textarea>
-          <div class="voice" data-voice="ans2"></div>
-          <p class="hint adult">아이의 말을 그대로 받아 적거나 목소리로 남겨 주셔도 됩니다.</p>
-          <p class="inline-msg" id="ans2msg" aria-live="polite"></p>
-          <div class="actions">
-            <button type="button" class="btn btn-primary" id="say2">이렇게 말했어</button>
-            <button type="button" class="btn btn-secondary" id="alt2" hidden>다른 질문 해 줘</button>
-            <button type="button" class="btn btn-quiet" id="skip2">건너뛸래</button>
+  <section class="step" id="step2" aria-labelledby="s2title" hidden>
+    <div class="wrap">
+      <div class="kid-head" data-trail="2"></div>
+      <p class="demo-pill"><span class="tag">AI 대화 기능 시연 예시</span>질문이 미리 정해 둔 순서대로 나오는 화면입니다. 실시간 AI는 연결되어 있지 않습니다.</p>
+      <h2 class="visually-hidden" id="s2title">루미와 이야기</h2>
+      <div class="kid-grid">
+        <figure class="scene" aria-label="그림책 장면 자리표시">
+          <strong>그림책 장면 4 자리</strong>
+          <span>(원화 받으면 교체)</span>
+          <span>《포포의 마음색 일기》</span>
+        </figure>
+        <div>
+          <div class="guide">
+            <div class="portrait lumi" id="lumiAv"><img src="assets/lumi_TEMP.png" alt="루미"><span class="nametag" aria-hidden="true">루미</span></div>
+            <p class="say" id="lumiSay" aria-live="polite"><span class="pre" id="lumiPre"></span><span class="main" id="lumiMain"></span></p>
           </div>
-        </div>
-        <div id="done2" hidden style="margin-top:16px">
-          <button type="button" class="btn btn-primary btn-block" id="toStep3">토리 만나러 가기</button>
+          <div class="me-echo" id="echo2" hidden><span class="who" id="echo2who"></span><span id="echo2text"></span></div>
+
+          <div class="panel" id="answer2">
+            <label class="field-label" for="ans2">하고 싶은 말 <span class="hint" style="font-weight:600">(안 적어도 괜찮아)</span></label>
+            <textarea id="ans2" maxlength="200"></textarea>
+            <div class="voice" data-voice="ans2"></div>
+            <p class="hint adult">아이의 말을 그대로 받아 적거나 목소리로 남겨 주셔도 됩니다.</p>
+            <p class="inline-msg" id="ans2msg" aria-live="polite"></p>
+            <button type="button" class="btn btn-primary btn-big btn-block" id="say2" style="margin-top:14px">이렇게 말했어</button>
+            <div class="row">
+              <button type="button" class="btn btn-quiet" id="alt2" hidden>다른 질문 해 줘</button>
+              <button type="button" class="btn btn-quiet" id="skip2">건너뛸래</button>
+            </div>
+          </div>
+
+          <div class="panel ar-offer" id="arOffer" hidden>
+            <button type="button" class="btn btn-primary btn-big btn-block" id="arFromStory">AR로 보기</button>
+            <button type="button" class="btn btn-secondary btn-block" id="skipAr" style="margin-top:12px">건너뛰기</button>
+            <p class="note">카메라로 그림을 비추면 캐릭터가 나타나는 실제 AR입니다. 지금은 시험판이라 로고를 비추면 토리가 나옵니다.</p>
+          </div>
         </div>
       </div>
     </div>
-    <div class="actions end"><button type="button" class="btn btn-quiet" data-back="1">← 이전</button></div>
   </section>
 
   <!-- 3단계: 토리 마음색 고르기 -->
-  <section class="step" id="step3" aria-labelledby="s3title" data-label="마음색 고르기">
-    <div class="notice demo" role="note"><span class="tag">AI 대화 기능 시연 예시</span> 질문이 미리 정해 둔 순서대로 나오는 화면입니다. 실시간 AI는 연결되어 있지 않습니다.</div>
-    <h2 class="step-title" id="s3title">토리와 마음색을 골라요</h2>
-    <div class="grid-2">
-      <div class="stack">
-        <div class="speaker">
-          <div class="avatar tori"><img src="assets/tori.png" alt="토리"></div>
-          <p class="bubble" style="margin:0"><span class="who tori">토리</span><span id="tori3a"></span></p>
+  <section class="step" id="step3" aria-labelledby="s3title" hidden>
+    <div class="wrap">
+      <div class="kid-head" data-trail="3"></div>
+      <p class="demo-pill"><span class="tag">AI 대화 기능 시연 예시</span>질문이 미리 정해 둔 순서대로 나오는 화면입니다. 실시간 AI는 연결되어 있지 않습니다.</p>
+      <h2 class="visually-hidden" id="s3title">토리와 마음색 고르기</h2>
+      <div class="kid-grid">
+        <div class="guide">
+          <div class="portrait tori" id="toriAv3"><img src="assets/tori.png" alt="토리"><span class="nametag" aria-hidden="true">토리</span></div>
+          <p class="say" id="toriSay3" aria-live="polite"><span class="pre" id="tori3pre"></span><span class="main" id="tori3main"></span></p>
         </div>
-        <div class="speaker">
-          <div class="avatar tori" aria-hidden="true"><img src="assets/tori.png" alt=""></div>
-          <p class="bubble" style="margin:0" aria-live="polite"><span class="who tori">토리</span><span id="tori3b"></span></p>
+        <div>
+          <div class="panel">
+            <p class="field-label">색을 눌러 봐. 여러 개 골라도 돼.</p>
+            <ul class="colors" id="colorGrid"></ul>
+            <p class="picked-line" id="pickedLine" aria-live="polite"></p>
+          </div>
+          <div class="panel" id="reasonBox" hidden>
+            <label class="field-label" for="reason3">왜 그 색이 떠올랐어? <span class="hint" style="font-weight:600">(안 적어도 괜찮아)</span></label>
+            <textarea id="reason3" maxlength="200"></textarea>
+            <div class="voice" data-voice="reason3"></div>
+            <p class="hint adult">아이의 말을 그대로 받아 적거나 목소리로 남겨 주셔도 됩니다.</p>
+          </div>
+          <button type="button" class="btn btn-primary btn-big btn-block" id="toStep4" style="margin:18px 0 32px">그림 그리러 가기</button>
         </div>
       </div>
-      <div class="card">
-        <h3 style="font-size:20px;margin-bottom:10px">색을 눌러 봐. 여러 개 골라도 돼.</h3>
-        <ul class="colors" id="colorGrid"></ul>
-        <p class="picked-line" id="pickedLine" aria-live="polite"></p>
-        <div id="reasonBox" hidden>
-          <label class="field-label" for="reason3">왜 그 색이 떠올랐어? <span class="small">(안 적어도 괜찮아)</span></label>
-          <textarea id="reason3" maxlength="200"></textarea>
-          <div class="voice" data-voice="reason3"></div>
-          <p class="hint adult">아이의 말을 그대로 받아 적거나 목소리로 남겨 주셔도 됩니다.</p>
-        </div>
-      </div>
-    </div>
-    <div class="actions end">
-      <button type="button" class="btn btn-quiet" data-back="2">← 이전</button>
-      <button type="button" class="btn btn-primary" id="toStep4">그림 그리러 가기</button>
     </div>
   </section>
 
   <!-- 4단계: 마음그림 등록 -->
-  <section class="step" id="step4" aria-labelledby="s4title" data-label="마음그림 올리기">
-    <div class="notice demo" role="note"><span class="tag">AI 대화 기능 시연 예시</span> 질문이 미리 정해 둔 순서대로 나오는 화면입니다. 실시간 AI는 연결되어 있지 않습니다.</div>
-    <h2 class="step-title" id="s4title">마음그림을 보여 줘</h2>
-    <div class="grid-2">
-      <div class="stack">
-        <div class="speaker">
-          <div class="avatar tori"><img src="assets/tori.png" alt="토리"></div>
-          <p class="bubble" style="margin:0"><span class="who tori">토리</span>네 마음을 그림으로 그려 볼까? 하트를 칠해도 좋고, 그리고 싶은 모습을 그려도 좋아.</p>
-        </div>
-        <div class="photo-buttons">
-          <label class="btn btn-secondary" for="photoCam">사진 찍기</label>
-          <input class="visually-hidden" type="file" id="photoCam" accept="image/*" capture="environment">
-          <label class="btn btn-secondary" for="photoPick">앨범에서 고르기</label>
-          <input class="visually-hidden" type="file" id="photoPick" accept="image/*">
-        </div>
-        <p class="hint adult">사진은 이 화면에서만 보이고 어디로도 보내지 않습니다.</p>
-        <div id="photoArea"><div class="photo-empty">다 그리면 그림 사진을 찍어 줘.</div></div>
-      </div>
-      <div class="card stack">
+  <section class="step" id="step4" aria-labelledby="s4title" hidden>
+    <div class="wrap">
+      <div class="kid-head" data-trail="4"></div>
+      <p class="demo-pill"><span class="tag">AI 대화 기능 시연 예시</span>질문이 미리 정해 둔 순서대로 나오는 화면입니다. 실시간 AI는 연결되어 있지 않습니다.</p>
+      <h2 class="visually-hidden" id="s4title">마음그림 올리기</h2>
+      <div class="kid-grid">
         <div>
-          <div class="speaker" style="margin-bottom:10px">
-            <div class="avatar tori" aria-hidden="true"><img src="assets/tori.png" alt=""></div>
-            <p class="bubble" style="margin:0"><span class="who tori">토리</span><span id="drawQ">그림 속에 누가 있니?</span></p>
+          <div class="guide">
+            <div class="portrait tori" id="toriAv4"><img src="assets/tori.png" alt="토리"><span class="nametag" aria-hidden="true">토리</span></div>
+            <p class="say" id="toriSay4" aria-live="polite"><span class="main">네 마음을 그림으로 그려 볼까?</span><span class="sub">하트를 칠해도 좋고, 그리고 싶은 모습을 그려도 좋아.</span></p>
           </div>
-          <label class="field-label visually-hidden" for="drawAns" id="drawAnsLabel">그림 속에 누가 있니?</label>
-          <textarea id="drawAns" maxlength="200" aria-describedby="drawHint"></textarea>
-          <div class="voice" data-voice="drawAns"></div>
-          <p class="hint" id="drawHint">안 적어도 괜찮아. 목소리로 들려줘도 돼.</p>
-          <button type="button" class="btn btn-quiet" id="drawSwap" style="margin-top:8px">다른 질문 해 줘</button>
+          <div class="panel">
+            <div class="photo-buttons">
+              <label class="btn btn-secondary" for="photoCam">사진 찍기</label>
+              <input class="visually-hidden" type="file" id="photoCam" accept="image/*" capture="environment">
+              <label class="btn btn-secondary" for="photoPick">앨범에서 고르기</label>
+              <input class="visually-hidden" type="file" id="photoPick" accept="image/*">
+            </div>
+            <div id="photoArea"><div class="photo-empty">다 그리면 그림 사진을 찍어 줘.</div></div>
+            <p class="hint adult">사진은 이 화면에서만 보이고 어디로도 보내지 않습니다.</p>
+          </div>
         </div>
         <div>
-          <div class="speaker" style="margin-bottom:10px">
-            <div class="avatar tori" aria-hidden="true"><img src="assets/tori.png" alt=""></div>
-            <p class="bubble" style="margin:0"><span class="who tori">토리</span>이 그림에 제목을 붙여 볼까?</p>
+          <div class="panel">
+            <div class="mini-guide"><img src="assets/tori.png" alt=""><p id="drawQ">그림 속에 누가 있니?</p></div>
+            <label class="visually-hidden" for="drawAns" id="drawAnsLabel">그림 속에 누가 있니?</label>
+            <textarea id="drawAns" maxlength="200" aria-describedby="drawHint"></textarea>
+            <div class="voice" data-voice="drawAns"></div>
+            <p class="hint" id="drawHint">안 적어도 괜찮아. 목소리로 들려줘도 돼.</p>
+            <button type="button" class="btn btn-quiet" id="drawSwap" style="margin-top:10px">다른 질문 해 줘</button>
           </div>
-          <label class="field-label" for="drawTitle">그림 제목 <span class="small">(안 적어도 괜찮아)</span></label>
-          <input type="text" id="drawTitle" maxlength="30" autocomplete="off">
-        </div>
-        <div id="keepLine" hidden class="speaker" aria-live="polite">
-          <div class="avatar tori" aria-hidden="true"><img src="assets/tori.png" alt=""></div>
-          <p class="bubble" style="margin:0"><span class="who tori">토리</span><span id="keepText"></span></p>
-        </div>
-        <button type="button" class="btn btn-primary btn-block" id="keepBtn">토리에게 보여 주기</button>
-        <button type="button" class="btn btn-primary btn-block" id="toStep5" hidden>보호자 화면 보기</button>
-      </div>
-    </div>
-    <div class="actions end"><button type="button" class="btn btn-quiet" data-back="3">← 이전</button></div>
-  </section>
-
-  <!-- 5단계: 보호자용 마음그림 기록 -->
-  <section class="step" id="step5" aria-labelledby="s5title" data-label="보호자 기록">
-    <div class="notice sim" role="note"><strong>시뮬레이션 — 실제 저장·전송 기능은 없습니다</strong> 보호자 휴대폰에서 기록을 보는 모습을 미리 꾸며 본 화면입니다.</div>
-    <h2 class="step-title" id="s5title">오늘의 마음그림 기록</h2>
-    <p style="margin:0 0 16px" id="recIntro"></p>
-    <div class="grid-2 record">
-      <div class="stack">
-        <div class="card">
-          <h3>그림</h3>
-          <div id="recPhoto"></div>
-        </div>
-        <div class="card">
-          <h3>그림 제목</h3>
-          <p style="margin:0" id="recTitle"></p>
-        </div>
-        <div class="card">
-          <h3>아이가 고른 색</h3>
-          <ul class="chips" id="recColors"></ul>
-          <p class="small" style="margin:10px 0 0">아이가 고른 색을 그대로 보여 드립니다. 색마다 정해진 뜻은 없으니 왜 골랐는지는 아이의 말로 들어 주세요.</p>
+          <div class="panel">
+            <div class="mini-guide"><img src="assets/tori.png" alt=""><p>이 그림에 제목을 붙여 볼까?</p></div>
+            <label class="field-label" for="drawTitle">그림 제목 <span class="hint" style="font-weight:600">(안 적어도 괜찮아)</span></label>
+            <input type="text" id="drawTitle" maxlength="30" autocomplete="off">
+          </div>
+          <div class="panel" id="keepLine" hidden aria-live="polite">
+            <div class="mini-guide"><img src="assets/tori.png" alt=""><p id="keepText"></p></div>
+          </div>
+          <button type="button" class="btn btn-primary btn-big btn-block" id="keepBtn" style="margin:18px 0 32px">토리에게 보여 주기</button>
+          <button type="button" class="btn btn-primary btn-big btn-block" id="toStep5" style="margin:18px 0 32px" hidden>보호자 화면 보기</button>
         </div>
       </div>
-      <div class="stack">
-        <div class="card">
-          <h3>아이가 한 말</h3>
-          <ul class="said" id="recSaid"></ul>
-        </div>
-        <div class="card">
-          <h3>공감 대화 TIP</h3>
-          <ol class="tips">
-            <li><b>감정 인정하기</b>아이가 한 말을 그대로 받아서 마음을 짚어 주세요.<span class="ex">예) “동생이 장난감을 가져가서 속상했구나.”</span></li>
-            <li><b>바라는 도움 묻기</b>그때 어떤 도움을 바랐는지 물어봐 주세요.<span class="ex">예) “그때 엄마가 어떻게 해 주었으면 좋았을까?”</span></li>
-            <li><b>함께 해결 방법 찾기</b>다음에 비슷한 일이 생기면 어떻게 할지 함께 정해 보세요.<span class="ex">예) “다음에 또 그러면 어떻게 하면 좋을까? 같이 생각해 보자.”</span></li>
-          </ol>
-          <p class="small" style="margin:12px 0 0">아이가 바로 대답하지 않으면 기다려 주시거나 다음에 다시 물어보셔도 됩니다. 이야기를 마칠 때는 “네 마음을 이야기해 줘서 고마워.”라고 말해 주세요.</p>
-        </div>
-      </div>
-    </div>
-    <div class="farewell" style="margin-top:16px">
-      <p class="small" style="margin:0 0 10px;font-weight:800">아이와 함께 보는 마무리 인사</p>
-      <div class="speaker">
-        <div class="avatar lumi"><img src="assets/lumi_TEMP.png" alt="루미"></div>
-        <p class="bubble" style="margin:0"><span class="who">루미</span>오늘 네 마음을 이야기해 줘서 고마워!</p>
-      </div>
-      <div class="speaker">
-        <div class="avatar tori"><img src="assets/tori.png" alt="토리"></div>
-        <p class="bubble" style="margin:0"><span class="who tori">토리</span>네 마음그림도 정말 소중해. 다음에 또 만나자!</p>
-      </div>
-    </div>
-    <div class="actions end">
-      <button type="button" class="btn btn-quiet" data-back="4">← 이전</button>
-      <button type="button" class="btn btn-primary" id="restartBtn">처음으로 돌아가기</button>
     </div>
   </section>
 
-</main>
+  <!-- 5단계: 보호자용 마음그림 기록(알림장) -->
+  <section class="step" id="step5" aria-labelledby="s5title" hidden>
+    <header class="p-bar">
+      <div class="wrap">
+        <button type="button" data-back="4" aria-label="이전 화면"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M15.4 5.4 14 4l-8 8 8 8 1.4-1.4L8.8 12z"/></svg></button>
+        <h2 id="s5title">오늘의 마음그림</h2>
+        <span class="date" id="todayDate"></span>
+      </div>
+    </header>
+    <div class="wrap p-body">
+      <div class="sim-note" role="note"><strong>시뮬레이션 — 실제 저장·전송 기능은 없습니다</strong>보호자 휴대폰에서 기록을 보는 모습을 미리 꾸며 본 화면입니다.</div>
+      <p class="p-intro" id="recIntro"></p>
+
+      <div class="p-card p-photo">
+        <div id="recPhoto"></div>
+        <div class="cap"><span class="lab">그림 제목</span><div id="recTitle"></div></div>
+      </div>
+
+      <div class="p-card">
+        <h3>아이가 고른 색</h3>
+        <ul class="chips" id="recColors"></ul>
+        <p class="p-small">아이가 고른 색을 그대로 보여 드립니다. 색마다 정해진 뜻은 없으니 왜 골랐는지는 아이의 말로 들어 주세요.</p>
+      </div>
+
+      <div class="p-card">
+        <h3>아이가 한 말</h3>
+        <ul class="said" id="recSaid"></ul>
+      </div>
+
+      <div class="p-card">
+        <h3>공감 대화 TIP</h3>
+        <ol class="tips">
+          <li><b>감정 인정하기</b>아이가 한 말을 그대로 받아서 마음을 짚어 주세요.<span class="ex">예) “동생이 장난감을 가져가서 속상했구나.”</span></li>
+          <li><b>바라는 도움 묻기</b>그때 어떤 도움을 바랐는지 물어봐 주세요.<span class="ex">예) “그때 엄마가 어떻게 해 주었으면 좋았을까?”</span></li>
+          <li><b>함께 해결 방법 찾기</b>다음에 비슷한 일이 생기면 어떻게 할지 함께 정해 보세요.<span class="ex">예) “다음에 또 그러면 어떻게 하면 좋을까? 같이 생각해 보자.”</span></li>
+        </ol>
+        <p class="p-small">아이가 바로 대답하지 않으면 기다려 주시거나 다음에 다시 물어보셔도 됩니다. 이야기를 마칠 때는 “네 마음을 이야기해 줘서 고마워.”라고 말해 주세요.</p>
+      </div>
+
+      <div class="p-card bye">
+        <h3>아이와 함께 보는 마무리 인사</h3>
+        <div class="line"><img src="assets/lumi_TEMP.png" alt="루미"><span><b>루미</b> 오늘 네 마음을 이야기해 줘서 고마워!</span></div>
+        <div class="line"><img src="assets/tori.png" alt="토리"><span><b>토리</b> 네 마음그림도 정말 소중해. 다음에 또 만나자!</span></div>
+      </div>
+
+      <div class="p-actions">
+        <button type="button" class="btn btn-plain" data-back="4">← 이전</button>
+        <button type="button" class="btn btn-teal" id="restartBtn">처음으로 돌아가기</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- 그림책 AR: 같은 페이지 안에서 띄운다(이야기 입력·사진·녹음 유지). 라이브러리는 처음 열 때만 불러온다. -->
+<div id="arLayer" hidden aria-label="그림책 AR">
+  <div id="arStage"></div>
+  <div class="ar-intro" id="arIntro">
+    <div class="inner">
+      <div class="row between" style="margin-top:0">
+        <div class="ar-tags"><span class="real">실제 AR</span><span class="test">시험판(로고 인식)</span></div>
+        <button type="button" class="btn btn-quiet" id="arCloseIntro">닫기</button>
+      </div>
+      <h2 id="arTitle">그림책 AR</h2>
+      <p id="arLead"></p>
+      <p class="note" id="arWhat"></p>
+      <ol>
+        <li>다른 화면에 로고를 띄우거나 인쇄해 주세요. 「인식용 로고 보기」를 눌러도 됩니다.</li>
+        <li>「카메라 켜기」를 누르고 카메라 사용을 허용해 주세요.</li>
+        <li>로고가 화면에 꽉 차도록 비춰 주세요.</li>
+      </ol>
+      <p class="note">카메라 영상은 이 휴대폰 안에서만 처리하고 어디에도 저장하거나 보내지 않습니다.</p>
+      <p class="inline-msg" id="arErr" role="alert"></p>
+      <button type="button" class="btn btn-primary btn-big btn-block" id="arStart" style="margin-top:16px">카메라 켜기</button>
+      <button type="button" class="btn btn-secondary btn-block" id="arShowTarget" style="margin-top:12px">인식용 로고 보기</button>
+    </div>
+  </div>
+  <div class="ar-hud" id="arHud" hidden>
+    <div class="ar-top">
+      <span class="ar-badge">실제 AR · 시험판(로고 인식)</span>
+      <button type="button" class="btn btn-primary" id="arClose">닫기</button>
+    </div>
+    <div class="ar-bottom">
+      <p class="ar-status" id="arStatus" role="status" aria-live="polite"></p>
+      <button type="button" class="btn btn-secondary" id="arShowTarget2">인식용 로고 보기</button>
+    </div>
+  </div>
+  <div class="ar-target" id="arTargetView" hidden role="dialog" aria-label="인식용 로고">
+    <img id="arTargetImg" alt="AR 인식용 그림">
+    <p>이 화면을 다른 휴대폰 카메라로 비춰 보세요.</p>
+    <button type="button" class="btn btn-secondary" id="arCloseTarget">닫기</button>
+  </div>
+</div>
 
 <script>
 (function () {
   "use strict";
+
+  // ===== AR 설정: 그림책 사진이 오면 이 블록만 바꾼다 =====
+  var AR = {
+    libs: ["ar/lib/aframe-v1.5.0.min.js", "ar/lib/mindar-image-aframe.prod.js"],
+    targetSrc: "ar/targets/logo.mind",       // 인식 대상(컴파일한 .mind 파일)
+    targetImage: "ar/targets/logo.png",      // 「인식용 로고 보기」에 띄울 그림
+    targetName: "로고",
+    character: "assets/tori.png",            // 인식되면 나타날 캐릭터 그림
+    characterName: "토리",
+    characterRatio: 197 / 245                // 캐릭터 그림 가로÷세로
+  };
 
   // 마음색: 색 이름만 쓰고 감정 단어는 붙이지 않는다.
   var COLORS = [
@@ -441,21 +543,20 @@
     ["초록색", "#2e7d32"], ["하늘색", "#4fc3f7"], ["파란색", "#1e63c8"], ["남색", "#283593"],
     ["보라색", "#8e44ad"], ["분홍색", "#f48fb1"], ["갈색", "#8d5524"], ["검은색", "#222222"]
   ];
-  var LABELS = ["시작", "루미와 이야기", "마음색 고르기", "마음그림 올리기", "보호자 기록"];
+  var STEP_NAMES = ["시작", "루미와 이야기", "마음색 고르기", "마음그림 올리기", "보호자 기록"];
+  var SCREENS = ["start", "lumi", "tori", "draw", "parent"];
+  var ICON = {
+    mic: '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>',
+    play: '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>',
+    stop: '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect fill="currentColor" x="6" y="6" width="12" height="12" rx="2"/></svg>',
+    back: '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M15.4 5.4 14 4l-8 8 8 8 1.4-1.4L8.8 12z"/></svg>'
+  };
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   var state;
   function freshState(name) {
-    return {
-      name: name || "",
-      said: [],            // [{q, a}] a가 null이면 건너뜀
-      colors: [],          // 고른 순서대로 색 번호
-      reason: "",
-      photoUrl: null,
-      drawQ: "그림 속에 누가 있니?",
-      drawAns: "",
-      title: "",
-      chatStarted: false
-    };
+    return { name: name || "", said: [], colors: [], reason: "", photoUrl: null,
+             drawQ: "그림 속에 누가 있니?", drawAns: "", title: "", chatStarted: false };
   }
   state = freshState("");
 
@@ -471,20 +572,87 @@
   function callName() { var n = nm(); return n + (hasBatchim(n) ? "아" : "야"); }
   function baseName() { var n = nm(); return hasBatchim(n) ? n + "이" : n; }
   function answered(s) { return !!(s && (s.a || s.voice)); }
+  function eul(w) { return w + (hasBatchim(w) ? "을" : "를"); }   // 목적격 조사
+  function ga(w) { return w + (hasBatchim(w) ? "이" : "가"); }     // 주격 조사
+
+  // ---------- 작은 연출 ----------
+  function talk(sayEl, avEl) {
+    [[sayEl, "talk"], [avEl, "talk-av"]].forEach(function (p) {
+      if (!p[0]) return;
+      p[0].classList.remove(p[1]); void p[0].offsetWidth; p[0].classList.add(p[1]);
+    });
+  }
+  function celebrate() {
+    if (reduceMotion) return;
+    var b = document.createElement("div"); b.className = "burst"; b.setAttribute("aria-hidden", "true");
+    var cols = ["#c2185b", "#f8c450", "#78b828", "#4fc3f7", "#f48fb1"];
+    for (var i = 0; i < 14; i++) {
+      var p = document.createElement("i");
+      var ang = (Math.PI * 2 * i) / 14, dist = 90 + (i % 3) * 30;
+      p.className = i % 2 ? "heart" : "star";
+      p.style.background = cols[i % cols.length];
+      p.style.setProperty("--dx", Math.round(Math.cos(ang) * dist) + "px");
+      p.style.setProperty("--dy", Math.round(Math.sin(ang) * dist) + "px");
+      p.style.setProperty("--rot", (i % 2 ? -1 : 1) * 120 + "deg");
+      p.style.animationDelay = (i % 4) * 40 + "ms";
+      b.appendChild(p);
+    }
+    document.body.appendChild(b);
+    setTimeout(function () { b.remove(); }, 1300);
+  }
+
+  // ---------- 작은 길(단계 표시) ----------
+  Array.prototype.forEach.call(document.querySelectorAll("[data-trail]"), function (head) {
+    var step = Number(head.getAttribute("data-trail"));
+    var html = '<button type="button" class="round-back" data-back="' + (step - 1) + '" aria-label="이전 화면">' + ICON.back + '</button>' +
+      '<nav class="trail" aria-label="진행 단계"><ol>';
+    for (var i = 1; i <= 5; i++) {
+      var cls = i < step ? "done" : (i === step ? "now" : "");
+      html += '<li class="' + cls + '"' + (i === step ? ' aria-current="step"' : "") + '>' +
+        (i < step ? "✓" : (i === step ? String(i) : "")) +
+        '<span class="visually-hidden">' + i + "단계 " + STEP_NAMES[i - 1] + (i < step ? " 마침" : "") + "</span></li>";
+    }
+    html += '</ol><span class="where">' + step + "/5 · " + STEP_NAMES[step - 1] + "</span></nav>";
+    head.innerHTML = html;
+  });
+
+  // ---------- 단계 이동 ----------
+  var current = 1;
+  function show(step) {
+    if (active) stopActive();
+    current = step;
+    for (var i = 1; i <= 5; i++) $("step" + i).hidden = i !== step;
+    document.body.setAttribute("data-screen", SCREENS[step - 1]);
+    if (step === 2) startChat();
+    if (step === 3) renderStep3();
+    if (step === 4) renderStep4();
+    if (step === 5) renderRecord();
+    window.scrollTo(0, 0);
+    var h = $("step" + step).querySelector("h1, h2");
+    if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); }
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-back]");
+    if (b) show(Math.max(1, Number(b.getAttribute("data-back"))));
+  });
+
+  // ---------- 1단계 ----------
+  function takeName() {
+    var n = $("childName").value.trim();
+    if (n !== state.name) resetFlow(n);
+  }
+  $("startBtn").addEventListener("click", function () { takeName(); show(2); });
+  $("childName").addEventListener("keydown", function (e) { if (e.key === "Enter") $("startBtn").click(); });
+  $("arDoor").addEventListener("click", function () { takeName(); openAR("start"); });
 
   // ---------- 목소리 남기기 ----------
   // 녹음은 이 브라우저 메모리(blob 주소)에만 두고 어디로도 보내지 않는다.
-  var ICON = {
-    mic: '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>',
-    play: '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>',
-    stop: '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect fill="currentColor" x="6" y="6" width="12" height="12" rx="2"/></svg>'
-  };
   var MAX_SEC = 60;
   var MSG_NO_REC = "이 화면에서는 녹음을 쓸 수 없어요. 글로 적어 주세요.";
   var MSG_DENIED = "마이크 사용을 허용하지 않아 녹음할 수 없어요. 글로 적어 주세요.";
   var MSG_WAIT = "마이크 허용 창이 떠 있으면 '허용'을 눌러 주세요. 녹음이 안 되면 글로 적어 주세요.";
-  var voiceUrls = [];        // 처음으로 돌아갈 때 모두 지운다
-  var active = null;         // 지금 녹음 중인 것 {rec, mr, stream, timer, start, chunks, discard, after}
+  var voiceUrls = [];
+  var active = null;
   var recorders = {};
   var voiceGen = 0;
 
@@ -499,9 +667,7 @@
     for (var i = 0; i < list.length; i++) { if (MediaRecorder.isTypeSupported(list[i])) return list[i]; }
     return "";
   }
-  function stopTracks(stream) {
-    if (stream) stream.getTracks().forEach(function (t) { t.stop(); });
-  }
+  function stopTracks(stream) { if (stream) stream.getTracks().forEach(function (t) { t.stop(); }); }
   function revokeVoice(v) {
     if (!v) return;
     URL.revokeObjectURL(v.url);
@@ -521,7 +687,6 @@
       '<p class="inline-msg v-msg" aria-live="polite"></p>';
     var q = function (c) { return box.querySelector(c); };
     var rec = { key: key, voice: null, audio: null };
-
     rec.render = function (recording) {
       q(".voice-live").hidden = !recording;
       q(".v-stop").hidden = !recording;
@@ -540,16 +705,13 @@
       if (rec.audio) { rec.audio.pause(); rec.audio = null; }
       q(".v-play-label").textContent = "들어 보기";
     };
-    rec.set = function (v) {          // 새 녹음이 들어오면 이전 녹음을 바꾼다
+    rec.set = function (v) {
       rec.stopPreview();
       if (rec.voice && rec.voice !== v) revokeVoice(rec.voice);
       rec.voice = v; rec.render(false);
     };
-    rec.take = function () {          // 답으로 넘기고 칸은 비운다(주소는 기록에 남김)
-      var v = rec.voice; rec.stopPreview(); rec.voice = null; rec.say(""); rec.render(false); return v;
-    };
+    rec.take = function () { var v = rec.voice; rec.stopPreview(); rec.voice = null; rec.say(""); rec.render(false); return v; };
     rec.clear = function () { rec.stopPreview(); revokeVoice(rec.voice); rec.voice = null; rec.say(""); rec.render(false); };
-
     q(".v-rec").addEventListener("click", function () { startRecording(rec); });
     q(".v-stop").addEventListener("click", function () { stopActive(); });
     q(".v-play").addEventListener("click", function () {
@@ -573,7 +735,7 @@
     var btn = document.querySelector('[data-voice="' + rec.key + '"] .v-rec');
     var gen = ++voiceGen;            // 마이크 허락을 기다리는 사이 화면을 옮기면 녹음을 시작하지 않는다
     if (btn) btn.disabled = true;
-    var waitTimer = setTimeout(function () {   // 허용 창에서 오래 기다리면 버튼을 다시 살리고 안내한다
+    var waitTimer = setTimeout(function () {
       if (btn) btn.disabled = false;
       if (gen === voiceGen) rec.say(MSG_WAIT, true);
     }, 8000);
@@ -634,120 +796,74 @@
     stopTracks(a.stream);            // 마이크를 바로 끈다
   }
   Array.prototype.forEach.call(document.querySelectorAll("[data-voice]"), makeRecorder);
-  window.addEventListener("pagehide", function () { stopActive(null, true); });
-
-  // 단계 이동
-  var current = 1;
-  function show(step) {
-    if (active) stopActive();
-    current = step;
-    for (var i = 1; i <= 5; i++) $("step" + i).classList.toggle("active", i === step);
-    $("topbar").hidden = step === 1;
-    $("stepCount").textContent = step + "/5";
-    $("stepLabel").textContent = LABELS[step - 1];
-    var dots = $("stepDots").children;
-    for (var j = 0; j < dots.length; j++) {
-      dots[j].className = j + 1 < step ? "done" : (j + 1 === step ? "now" : "");
-    }
-    if (step === 2) startChat();
-    if (step === 3) renderStep3();
-    if (step === 4) renderStep4();
-    if (step === 5) renderRecord();
-    window.scrollTo(0, 0);
-    var h = $("step" + step).querySelector("h1, h2");
-    if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); }
-  }
-
-  // ---------- 1단계 ----------
-  $("startBtn").addEventListener("click", function () {
-    var n = $("childName").value.trim();
-    if (n !== state.name) { resetFlow(n); }
-    show(2);
-  });
-  $("childName").addEventListener("keydown", function (e) { if (e.key === "Enter") $("startBtn").click(); });
+  window.addEventListener("pagehide", function () { stopActive(null, true); closeAR(true); });
 
   // ---------- 2단계: 루미 대화 ----------
-  var chatNode = null;      // 지금 묻고 있는 질문
-  function addMsg(kind, text, voice) {
-    var box = $("chat2");
-    var row = document.createElement("div");
-    var bubble = document.createElement("p");
-    var who = document.createElement("span");
-    bubble.className = "bubble"; bubble.style.margin = "0";
-    who.className = "who";
-    if (kind === "lumi") {
-      row.className = "msg speaker lumi-line";
-      var av = document.createElement("div"); av.className = "avatar lumi";
-      var img = document.createElement("img"); img.src = "assets/lumi_TEMP.png"; img.alt = "";
-      av.appendChild(img); row.appendChild(av);
-      who.textContent = "루미";
-    } else {
-      row.className = "msg me" + (kind === "skip" ? " skip" : "");
-      who.textContent = nm();
-    }
-    bubble.appendChild(who);
-    if (text) bubble.appendChild(document.createTextNode(text));
+  var chatNode = null, currentQ = "";
+  function lumiSay(pre, main) {
+    $("lumiPre").textContent = pre || "";
+    $("lumiPre").hidden = !pre;
+    $("lumiMain").textContent = main || "";
+    talk($("lumiSay"), $("lumiAv"));
+  }
+  function echo(text, voice, skipped) {
+    var box = $("echo2");
+    box.hidden = false;
+    box.className = "me-echo" + (skipped ? " skip" : "");
+    $("echo2who").textContent = nm();
+    var t = $("echo2text"); t.textContent = "";
+    if (skipped) { t.textContent = "(건너뛰었어)"; return; }
+    if (text) t.appendChild(document.createTextNode(text));
     if (voice) {
       var mark = document.createElement("span"); mark.className = "voice-mark";
       if (text) mark.style.display = "flex";
       mark.innerHTML = ICON.mic;
       mark.appendChild(document.createTextNode(text ? "목소리도 남겼어" : "목소리로 답했어"));
-      bubble.appendChild(mark);
+      t.appendChild(mark);
     }
-    row.appendChild(bubble);
-    box.appendChild(row);
   }
-
-  // 콘티 장면 1·3·6 대사를 이어 붙인 순서
+  // 콘티 장면 1·3·6·7 대사를 이어 붙인 순서
   var NODES = {
     q1: {
       ask: function () { return "이 장면에서 포포는 어떤 마음이었을까?"; },
-      answered: function () { addMsg("lumi", "그렇게 생각했구나."); go("q2"); },
-      skipped: function () { addMsg("lumi", "괜찮아. 다음 이야기를 해 보자."); go("q2"); }
+      answered: function () { go("q2", "그렇게 생각했구나."); },
+      skipped: function () { go("q2", "괜찮아. 다음 이야기를 해 보자."); }
     },
     q2: {
       ask: function () {
-        var prev = state.said[0];
-        return answered(prev) ? baseName() + "도 포포처럼 그런 마음이 든 적이 있니?"
-                              : baseName() + "도 포포처럼 속상했던 적이 있니?";
+        return answered(state.said[0]) ? baseName() + "도 포포처럼 그런 마음이 든 적이 있니?"
+                                       : baseName() + "도 포포처럼 속상했던 적이 있니?";
       },
       alt: "그럼 포포처럼 기뻤던 적은 언제였니?",
-      answered: function () { addMsg("lumi", "그랬구나."); go("q3"); },
-      skipped: function () { addMsg("lumi", "괜찮아. 말하고 싶을 때 들려줘."); finishChat(); }
+      answered: function () { go("q3", "그랬구나."); },
+      skipped: function () { finishChat("괜찮아. 말하고 싶을 때 들려줘."); }
     },
     q3: {
       ask: function () { return "그때 어떤 마음이 들었니?"; },
-      answered: function () { addMsg("lumi", "그런 마음이 들었구나. 이야기해 줘서 고마워."); finishChat(); },
-      skipped: function () { addMsg("lumi", "이야기해 줘서 고마워."); finishChat(); }
+      answered: function () { finishChat("그런 마음이 들었구나. 이야기해 줘서 고마워."); },
+      skipped: function () { finishChat("이야기해 줘서 고마워."); }
     }
   };
-  var currentQ = "";
-  function go(key) {
+  function go(key, pre) {
     chatNode = NODES[key];
     currentQ = chatNode.ask();
-    addMsg("lumi", currentQ);
+    lumiSay(pre, currentQ);
     $("alt2").hidden = !chatNode.alt;
     $("ans2").value = ""; $("ans2msg").textContent = "";
     if (recorders.ans2) recorders.ans2.clear();
-    keepInView($("answer2"));
-  }
-  function keepInView(el) {
-    if (!el || current !== 2) return;
-    var calm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    el.scrollIntoView({ block: "nearest", behavior: calm ? "auto" : "smooth" });
   }
   function startChat() {
     if (state.chatStarted) return;
     state.chatStarted = true;
-    $("chat2").textContent = "";
-    $("answer2").hidden = false; $("done2").hidden = true;
-    addMsg("lumi", "안녕, " + callName() + "! 나는 루미야. 오늘은 내 친구 포포의 이야기를 들려줄게.");
-    go("q1");
+    $("answer2").hidden = false; $("arOffer").hidden = true; $("echo2").hidden = true;
+    go("q1", "안녕, " + callName() + "! 나는 루미야. 오늘은 내 친구 포포의 이야기를 들려줄게.");
   }
-  function finishChat() {
+  function finishChat(pre) {
     chatNode = null;
-    $("answer2").hidden = true; $("done2").hidden = false;
-    keepInView($("done2"));
+    $("answer2").hidden = true; $("arOffer").hidden = false;
+    lumiSay(pre, "포포가 어떻게 움직이는지 볼까?");     // 콘티 장면 7
+    celebrate();
+    $("lumiSay").scrollIntoView({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" });
   }
   $("say2").addEventListener("click", function () {
     stopActive(function () {
@@ -757,8 +873,9 @@
       if (!t && !v) { $("ans2msg").textContent = "아직 아무것도 안 적었어. 목소리를 남기거나 '건너뛸래'를 눌러 줘."; $("ans2").focus(); return; }
       v = recorders.ans2.take();
       state.said.push({ q: currentQ, a: t || null, voice: v, by: "루미" });
-      addMsg("me", t, !!v);
+      echo(t, !!v, false);
       chatNode.answered();
+      $("lumiSay").scrollIntoView({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" });
     });
   });
   $("skip2").addEventListener("click", function () {
@@ -766,17 +883,18 @@
       if (!chatNode) return;
       recorders.ans2.clear();
       state.said.push({ q: currentQ, a: null, by: "루미" });
-      addMsg("skip", "(건너뛰었어)");
+      echo("", false, true);
       chatNode.skipped();
     }, true);
   });
   $("alt2").addEventListener("click", function () {
     if (!chatNode || !chatNode.alt) return;
     currentQ = chatNode.alt;
-    addMsg("lumi", currentQ);
+    lumiSay("", currentQ);
     $("alt2").hidden = true;
   });
-  $("toStep3").addEventListener("click", function () { show(3); });
+  $("arFromStory").addEventListener("click", function () { openAR("story"); });
+  $("skipAr").addEventListener("click", function () { show(3); });
 
   // ---------- 3단계: 마음색 ----------
   (function buildColors() {
@@ -785,7 +903,6 @@
       var li = document.createElement("li");
       var b = document.createElement("button");
       b.type = "button"; b.className = "swatch"; b.setAttribute("aria-pressed", "false");
-      b.dataset.idx = i;
       var dot = document.createElement("span"); dot.className = "dot"; dot.style.background = c[1];
       dot.textContent = "✓"; dot.setAttribute("aria-hidden", "true");
       var name = document.createElement("span"); name.className = "name"; name.textContent = c[0];
@@ -794,39 +911,46 @@
       li.appendChild(b); grid.appendChild(li);
     });
   })();
+  var hadColor = null;
   function toggleColor(i, b) {
     var pos = state.colors.indexOf(i);
     if (pos === -1) state.colors.push(i); else state.colors.splice(pos, 1);
     b.setAttribute("aria-pressed", pos === -1 ? "true" : "false");
     updatePicked();
   }
-  function updatePicked() {
-    var names = state.colors.map(function (i) { return COLORS[i][0]; });
-    $("pickedLine").textContent = names.length ? "고른 색: " + names.join(", ") : "";
-    var any = names.length > 0;
-    $("reasonBox").hidden = !any;
-    $("tori3b").textContent = any ? "그 색을 골랐구나. 왜 그 색이 떠올랐는지 말해 줄래?"
-                                  : toriColorQuestion();
-  }
   function toriColorQuestion() {
     var hadStory = state.said.some(function (s) { return answered(s) && s.q.indexOf("포포는 어떤") === -1; });
     return (hadStory ? "그때" : "지금") + " 마음을 색으로 나타낸다면 어떤 색이 좋을까?";
   }
-  function renderStep3() {
-    $("tori3a").textContent = "안녕, " + callName() + "! 나는 토리야. " + baseName() + "의 마음을 색으로 표현해 볼까?";
-    updatePicked();
+  function updatePicked(force) {
+    var names = state.colors.map(function (i) { return COLORS[i][0]; });
+    $("pickedLine").textContent = names.length ? "고른 색: " + names.join(", ") : "";
+    var any = names.length > 0;
+    $("reasonBox").hidden = !any;
+    if (force || any !== hadColor) {
+      hadColor = any;
+      if (any) { $("tori3pre").textContent = "그 색을 골랐구나."; $("tori3main").textContent = "왜 그 색이 떠올랐는지 말해 줄래?"; }
+      else {
+        $("tori3pre").textContent = "안녕, " + callName() + "! 나는 토리야. " + baseName() + "의 마음을 색으로 표현해 볼까?";
+        $("tori3main").textContent = toriColorQuestion();
+      }
+      talk($("toriSay3"), $("toriAv3"));
+    }
   }
-  $("toStep4").addEventListener("click", function () { state.reason = $("reason3").value.trim(); show(4); });
+  function renderStep3() { hadColor = null; updatePicked(true); }
+  $("toStep4").addEventListener("click", function () { state.reason = $("reason3").value.trim(); show(4); celebrate(); });
 
   // ---------- 4단계: 마음그림 ----------
   function renderStep4() {
     $("drawQ").textContent = state.drawQ;
     $("drawAnsLabel").textContent = state.drawQ;
+    talk($("toriSay4"), $("toriAv4"));
   }
+  function photoEmpty(text) { $("photoArea").innerHTML = ""; var d = document.createElement("div"); d.className = "photo-empty"; d.textContent = text; $("photoArea").appendChild(d); }
   function onPhoto(e) {
     var f = e.target.files && e.target.files[0];
     if (!f) return;
-    if (!/^image\//.test(f.type)) { $("photoArea").innerHTML = '<div class="photo-empty">사진 파일만 올릴 수 있어. 다시 골라 줘.</div>'; return; }
+    if (!/^image\//.test(f.type)) { photoEmpty("사진 파일만 올릴 수 있어. 다시 골라 줘."); return; }
     if (state.photoUrl) URL.revokeObjectURL(state.photoUrl);
     state.photoUrl = URL.createObjectURL(f);   // 브라우저 안에서만 보여 주는 임시 주소
     var area = $("photoArea"); area.textContent = "";
@@ -848,6 +972,7 @@
     $("keepLine").hidden = false;
     $("keepBtn").hidden = true;
     $("toStep5").hidden = false;
+    celebrate();
     $("toStep5").focus();
   });
   $("toStep5").addEventListener("click", function () {
@@ -857,25 +982,48 @@
   });
 
   // ---------- 5단계: 보호자 기록 ----------
+  function todayText() {
+    var d = new Date();
+    return (d.getMonth() + 1) + "월 " + d.getDate() + "일 " + "일월화수목금토".charAt(d.getDay()) + "요일";
+  }
+  function listenButton(v) {
+    var wrap = document.createElement("div");
+    var audio = document.createElement("audio");
+    audio.preload = "metadata"; audio.src = v.url; audio.className = "rec-audio";
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "btn btn-secondary listen";
+    b.setAttribute("aria-label", "아이 목소리 듣기 (" + v.sec + "초)");
+    var label = document.createElement("span"); label.textContent = "듣기 (" + v.sec + "초)";
+    b.innerHTML = ICON.play; b.appendChild(label);
+    function reset() { label.textContent = "듣기 (" + v.sec + "초)"; }
+    audio.addEventListener("ended", reset); audio.addEventListener("pause", reset);
+    b.addEventListener("click", function () {
+      if (!audio.paused) { audio.pause(); return; }
+      Array.prototype.forEach.call(document.querySelectorAll("audio.rec-audio"), function (x) { if (x !== audio) x.pause(); });
+      label.textContent = "멈추기";
+      var pr = audio.play(); if (pr && pr.catch) pr.catch(reset);
+    });
+    wrap.appendChild(audio); wrap.appendChild(b);
+    return wrap;
+  }
   function renderRecord() {
+    $("todayDate").textContent = todayText();
     $("recIntro").textContent = nm() + (state.name ? "(가명)" : "") + "의 오늘 기록입니다. 기록을 보시고 아이와 이야기를 나눠 보세요.";
 
     var ph = $("recPhoto"); ph.textContent = "";
     if (state.photoUrl) {
-      var box = document.createElement("div"); box.className = "photo-preview";
       var img = document.createElement("img"); img.src = state.photoUrl; img.alt = "아이가 그린 마음그림 사진";
-      box.appendChild(img); ph.appendChild(box);
+      ph.appendChild(img);
     } else {
-      var p0 = document.createElement("p"); p0.className = "small"; p0.style.margin = "0";
-      p0.textContent = "올린 사진이 없습니다."; ph.appendChild(p0);
+      var p0 = document.createElement("div"); p0.className = "noimg"; p0.textContent = "올린 사진이 없습니다."; ph.appendChild(p0);
     }
-
-    var t = $("recTitle"); t.className = state.title ? "title-text" : "small";
+    var t = $("recTitle"); t.className = state.title ? "ttl" : "p-small";
+    t.style.marginTop = state.title ? "" : "0";
     t.textContent = state.title ? "“" + state.title + "”" : "제목을 붙이지 않았습니다.";
 
     var ul = $("recColors"); ul.textContent = "";
     if (!state.colors.length) {
-      var li0 = document.createElement("li"); li0.className = "small"; li0.textContent = "고른 색이 없습니다."; ul.appendChild(li0);
+      var li0 = document.createElement("li"); li0.className = "p-small"; li0.style.marginTop = "0"; li0.textContent = "고른 색이 없습니다."; ul.appendChild(li0);
     }
     state.colors.forEach(function (i) {
       var li = document.createElement("li"); li.className = "chip";
@@ -898,28 +1046,150 @@
     });
   }
 
-  function listenButton(v) {
-    var wrap = document.createElement("div");
-    var audio = document.createElement("audio");
-    audio.preload = "metadata"; audio.src = v.url; audio.className = "rec-audio";
-    var b = document.createElement("button");
-    b.type = "button"; b.className = "btn btn-secondary listen";
-    b.setAttribute("aria-label", "아이 목소리 듣기 (" + v.sec + "초)");
-    var label = document.createElement("span"); label.textContent = "듣기 (" + v.sec + "초)";
-    b.innerHTML = ICON.play; b.appendChild(label);
-    function reset() { label.textContent = "듣기 (" + v.sec + "초)"; }
-    audio.addEventListener("ended", reset); audio.addEventListener("pause", reset);
-    b.addEventListener("click", function () {
-      if (!audio.paused) { audio.pause(); return; }
-      Array.prototype.forEach.call(document.querySelectorAll("audio.rec-audio"), function (x) { if (x !== audio) x.pause(); });
-      label.textContent = "멈추기";
-      var pr = audio.play(); if (pr && pr.catch) pr.catch(reset);
+  // ---------- 그림책 AR ----------
+  var arFrom = "start", arLibs = null, arScene = null, arState = "closed";   // closed | intro | starting | live
+  function loadScript(src) {
+    return new Promise(function (ok, fail) {
+      var s = document.createElement("script"); s.src = src; s.async = false;
+      s.onload = ok; s.onerror = function () { fail(new Error("load " + src)); };
+      document.head.appendChild(s);
     });
-    wrap.appendChild(audio); wrap.appendChild(b);
-    return wrap;
   }
+  function loadArLibs() {
+    if (!arLibs) {
+      arLibs = AR.libs.reduce(function (p, src) { return p.then(function () { return loadScript(src); }); }, Promise.resolve());
+      arLibs.catch(function () { arLibs = null; });
+    }
+    return arLibs;
+  }
+  function buildScene() {
+    if (arScene) return arScene;
+    var w = 0.36, h = w / AR.characterRatio;
+    $("arStage").innerHTML =
+      '<a-scene embedded mindar-image="imageTargetSrc: ' + AR.targetSrc + '; autoStart: false; uiLoading: no; uiError: no; uiScanning: no; filterMinCF: 0.0001; filterBeta: 0.001"' +
+      ' color-space="sRGB" renderer="colorManagement: true; physicallyCorrectLights: true" vr-mode-ui="enabled: false"' +
+      ' device-orientation-permission-ui="enabled: false" loading-screen="enabled: false">' +
+        '<a-assets><img id="arCharImg" src="' + AR.character + '"></a-assets>' +
+        '<a-camera position="0 0 0" look-controls="enabled: false"></a-camera>' +
+        '<a-entity id="arTarget" mindar-image-target="targetIndex: 0">' +
+          '<a-entity id="arChar" position="0.18 0.42 0.05" scale="0.001 0.001 0.001">' +
+            '<a-entity id="arBob"' + (reduceMotion ? "" :
+              ' animation__bob="property: position; from: 0 0 0; to: 0 0.07 0; dur: 700; dir: alternate; loop: true; easing: easeInOutSine"' +
+              ' animation__tilt="property: rotation; from: 0 0 -6; to: 0 0 6; dur: 1400; dir: alternate; loop: true; easing: easeInOutSine"') + '>' +
+              '<a-plane width="' + (w + 0.06).toFixed(3) + '" height="' + (h + 0.052).toFixed(3) + '" color="#ffffff" material="shader: flat"></a-plane>' +
+              '<a-image src="#arCharImg" width="' + w + '" height="' + h.toFixed(3) + '" position="0 0 0.002" material="shader: flat; transparent: true"></a-image>' +
+            '</a-entity>' +
+          '</a-entity>' +
+        '</a-entity>' +
+      '</a-scene>';
+    arScene = $("arStage").querySelector("a-scene");
+    arScene.addEventListener("arReady", function () {
+      if (arState !== "starting") { stopCamera(); return; }   // 준비 중에 닫았으면 바로 끈다
+      arState = "live";
+      resetTarget();
+      document.documentElement.classList.add("ar-live");
+      $("arIntro").hidden = true; $("arHud").hidden = false;
+      $("arStatus").textContent = eul(AR.targetName) + " 화면에 비춰 봐.";
+      window.dispatchEvent(new Event("resize"));
+    });
+    arScene.addEventListener("arError", function () {
+      stopCamera();
+      arState = "intro";
+      resetStartBtn();
+      $("arErr").textContent = "카메라를 켜지 못했습니다. 카메라 사용을 허용했는지 확인한 뒤 다시 눌러 주세요.";
+    });
+    var target = $("arTarget"), ch = $("arChar");
+    target.addEventListener("targetFound", function () {
+      $("arStatus").textContent = ga(AR.characterName) + " 나타났어!";
+      ch.removeAttribute("animation__pop");
+      ch.setAttribute("scale", "0.001 0.001 0.001");
+      ch.setAttribute("animation__pop", "property: scale; to: 0.75 0.75 0.75; dur: " + (reduceMotion ? 1 : 500) + "; easing: easeOutBack");
+    });
+    target.addEventListener("targetLost", function () { $("arStatus").textContent = eul(AR.targetName) + " 다시 비춰 봐."; });
+    return arScene;
+  }
+  function resetStartBtn() { $("arStart").disabled = false; $("arStart").textContent = "카메라 켜기"; }
+  function openAR(from) {
+    if (active) stopActive();
+    arFrom = from;
+    arState = "intro";
+    $("arLead").textContent = from === "story" ? "포포가 어떻게 움직이는지 볼까?" : "카메라로 그림을 비추면 캐릭터가 나타나요.";
+    $("arWhat").textContent = "카메라가 그림을 알아보는 부분은 실제로 작동하는 AR입니다. " + AR.characterName +
+      "의 움직임은 미리 만들어 둔 애니메이션입니다. 지금은 그림책 장면 대신 " + eul(AR.targetName) + " 알아보는 시험판이라 " +
+      ga(AR.characterName) + " 나옵니다. 그림책 사진을 받으면 장면과 포포로 바꿉니다.";
+    $("arErr").textContent = "";
+    $("arIntro").hidden = false; $("arHud").hidden = true; $("arTargetView").hidden = true;
+    $("arLayer").hidden = false;
+    document.documentElement.classList.add("ar-open");
+    resetStartBtn();
+    $("arTitle").setAttribute("tabindex", "-1"); $("arTitle").focus({ preventScroll: true });
+    loadArLibs().catch(function () {});            // 미리 받아 두기(첫 화면에서는 받지 않는다)
+  }
+  $("arStart").addEventListener("click", function () {
+    $("arErr").textContent = "";
+    if (!window.isSecureContext || location.protocol === "file:" || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      $("arErr").textContent = "이 화면에서는 카메라를 쓸 수 없습니다. 보안 주소(https)로 열어 주세요.";
+      return;
+    }
+    $("arStart").disabled = true; $("arStart").textContent = "카메라를 켜는 중…";
+    arState = "starting";
+    loadArLibs().then(function () {
+      if (arState !== "starting") return;
+      var scene = buildScene();
+      var go = function () {
+        if (arState !== "starting") return;
+        try { if (scene.renderer && scene.render) scene.renderer.setAnimationLoop(scene.render); } catch (e) {}
+        resetTarget();
+        scene.systems["mindar-image-system"].start();
+      };
+      if (scene.hasLoaded) go(); else scene.addEventListener("loaded", go, { once: true });
+    }).catch(function () {
+      arState = "intro"; resetStartBtn();
+      $("arErr").textContent = "AR 파일을 불러오지 못했습니다. 인터넷 연결을 확인한 뒤 다시 눌러 주세요.";
+    });
+  });
+  // 카메라를 확실히 끈다: MindAR 정지 + 남은 영상 트랙 정지 + 그리기 멈춤
+  function stopCamera() {
+    var stage = $("arStage");
+    var streams = Array.prototype.map.call(stage.querySelectorAll("video"), function (v) { return v.srcObject; });
+    if (arScene && arScene.systems && arScene.systems["mindar-image-system"]) {
+      try { arScene.systems["mindar-image-system"].stop(); } catch (e) {}
+    }
+    streams.forEach(stopTracks);
+    Array.prototype.forEach.call(stage.querySelectorAll("video"), function (v) { v.srcObject = null; v.remove(); });
+    try { if (arScene && arScene.renderer) arScene.renderer.setAnimationLoop(null); } catch (e) {}
+    resetTarget();
+  }
+  // 다시 열었을 때 '찾았다'를 새로 알리도록 인식 상태를 처음으로 되돌린다
+  function resetTarget() {
+    try {
+      var tc = $("arTarget") && $("arTarget").components["mindar-image-target"];
+      if (tc) { tc.el.object3D.visible = false; tc.el.object3D.matrix = tc.invisibleMatrix; }
+      if ($("arChar")) { $("arChar").removeAttribute("animation__pop"); $("arChar").setAttribute("scale", "0.001 0.001 0.001"); }
+    } catch (e) {}
+  }
+  function closeAR(silent) {
+    if (arState === "closed") return;
+    var wasStory = arFrom === "story";
+    stopCamera();
+    arState = "closed";
+    document.documentElement.classList.remove("ar-live", "ar-open");
+    $("arLayer").hidden = true;
+    if (silent) return;
+    if (wasStory) show(3); else show(1);
+  }
+  $("arClose").addEventListener("click", function () { closeAR(); });
+  $("arCloseIntro").addEventListener("click", function () { closeAR(); });
+  function showTarget(on) { $("arTargetView").hidden = !on; if (on) $("arTargetImg").src = AR.targetImage; }
+  $("arShowTarget").addEventListener("click", function () { showTarget(true); });
+  $("arShowTarget2").addEventListener("click", function () { showTarget(true); });
+  $("arCloseTarget").addEventListener("click", function () { showTarget(false); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape" || arState === "closed") return;
+    if (!$("arTargetView").hidden) showTarget(false); else closeAR();
+  });
 
-  // ---------- 처음으로 / 이전 ----------
+  // ---------- 처음으로 ----------
   function resetFlow(name) {
     stopActive(null, true);
     Object.keys(recorders).forEach(function (k) { recorders[k].clear(); });
@@ -928,20 +1198,17 @@
     voiceUrls.splice(0).forEach(function (u) { URL.revokeObjectURL(u); });
     if (state.photoUrl) URL.revokeObjectURL(state.photoUrl);
     state = freshState(name);
-    $("chat2").textContent = "";
     $("ans2").value = ""; $("ans2msg").textContent = "";
     $("reason3").value = ""; $("drawAns").value = ""; $("drawTitle").value = "";
-    $("photoArea").innerHTML = '<div class="photo-empty">다 그리면 그림 사진을 찍어 줘.</div>';
+    photoEmpty("다 그리면 그림 사진을 찍어 줘.");
     $("keepLine").hidden = true; $("keepBtn").hidden = false; $("toStep5").hidden = true;
+    $("echo2").hidden = true; $("answer2").hidden = false; $("arOffer").hidden = true;
     Array.prototype.forEach.call(document.querySelectorAll(".swatch"), function (b) { b.setAttribute("aria-pressed", "false"); });
   }
   $("restartBtn").addEventListener("click", function () {
     resetFlow("");
     $("childName").value = "";
     show(1);
-  });
-  Array.prototype.forEach.call(document.querySelectorAll("[data-back]"), function (b) {
-    b.addEventListener("click", function () { show(Number(b.getAttribute("data-back"))); });
   });
 })();
 </script>
