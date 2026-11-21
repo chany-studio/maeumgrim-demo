@@ -38,8 +38,12 @@
     --p-muted: #5a6475;
     --p-blue: #1a6fd4;        /* 흰 글자 4.9:1 */
     --p-blue-soft: #e4effc;
+    --round: "Jua L", "Jua K", "Apple SD Gothic Neo", "AppleSDGothicNeo", "Malgun Gothic", "맑은 고딕", sans-serif;
     --font: "Apple SD Gothic Neo", "AppleSDGothicNeo", "Malgun Gothic", "맑은 고딕", sans-serif;
   }
+  /* 둥근 글꼴: 주아(BM JUA, SIL OFL 1.1) — 파일을 함께 넣어 외부에서 불러오지 않음. 한 굵기뿐이라 가짜 굵게를 막으려고 굵기 범위를 넓게 선언 */
+  @font-face { font-family: "Jua L"; src: url(assets/fonts/jua-latin-400-normal.woff2) format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
+  @font-face { font-family: "Jua K"; src: url(assets/fonts/jua-korean-400-normal.woff2) format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
   html { -webkit-text-size-adjust: 100%; background: var(--c-start); }
@@ -65,6 +69,13 @@
   h1, h2, h3 { line-height: 1.3; margin: 0; }
   p { margin: 0; }
   .step { position: relative; z-index: 1; }
+  /* 아이 화면의 제목·말풍선·버튼·이름표에 둥근 글꼴 (보호자 안내·입력 글자·보호자 화면은 기본 글꼴) */
+  .home-sky h1, .home-sub, .demo-chip, .door-title, .btn, .trail, .nametag, .say, .field-label, .me-echo, .swatch .name,
+  .mini-guide p, .photo-empty, .scene strong, .picked-line, .voice-live, .voice-done, .ar-intro h2, #arLead, .ar-status, .ar-badge, .ar-tags span, .demo-pill .tag {
+    font-family: var(--round); letter-spacing: 0;
+  }
+  .field-label .hint { font-family: var(--font); }
+  body[data-screen="parent"] .btn { font-family: var(--font); }
 
   /* 아이 화면 아래쪽 언덕(2~4단계) */
   body[data-screen="lumi"] .app::after, body[data-screen="tori"] .app::after, body[data-screen="draw"] .app::after {
