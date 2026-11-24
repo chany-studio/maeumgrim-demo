@@ -37,8 +37,8 @@
      파일에 없는 드문 글자는 기기 기본 글꼴로 보임. 라이선스는 assets/fonts/pretendard/OFL-Pretendard.txt */
   @font-face { font-family: "Pretendard"; src: url(assets/fonts/pretendard/Pretendard-Regular.subset.woff2) format("woff2"); font-weight: 400; font-display: swap; }
   @font-face { font-family: "Pretendard"; src: url(assets/fonts/pretendard/Pretendard-SemiBold.subset.woff2) format("woff2"); font-weight: 600; font-display: swap; }
-  @font-face { font-family: "Pretendard"; src: url(assets/fonts/pretendard/Pretendard-Bold.subset.woff2) format("woff2"); font-weight: 700; font-display: swap; }
-  @font-face { font-family: "Pretendard"; src: url(assets/fonts/pretendard/Pretendard-ExtraBold.subset.woff2) format("woff2"); font-weight: 800; font-display: swap; }
+  @font-face { font-family: "Pretendard"; src: url(assets/fonts/pretendard/Pretendard-Bold.subset.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+  @font-face { font-family: "Pretendard"; src: url(assets/fonts/pretendard/Pretendard-Medium.subset.woff2) format("woff2"); font-weight: 500; font-display: swap; }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
   html { -webkit-text-size-adjust: 100%; background: var(--bg); }
@@ -64,13 +64,13 @@
   h1, h2, h3 { line-height: 1.3; margin: 0; }
   p { margin: 0; }
   .step { position: relative; z-index: 1; }
-  /* 아이 화면의 제목·말풍선·버튼·이름표는 아주 굵게(800), 보호자 안내·입력 글자·보호자 화면 본문은 보통 굵기 */
+  /* 아이 화면의 제목·말풍선·버튼·이름표는 조금 굵게(600, 사용자 요청으로 800에서 낮춤), 보호자 안내·입력 글자·보호자 화면 본문은 보통 굵기 */
   .home-top h1, .home-sub, .demo-chip, .tile b, .btn, .trail, .nametag, .say, .field-label, .me-echo, .swatch .name,
   .mini-guide p, .photo-empty, .scene strong, .picked-line, .voice-live, .voice-done, .ar-intro h2, #arLead, .ar-status, .ar-badge, .ar-tags span, .demo-pill .tag,
   .p-bar h2, .p-card h3, .p-photo .cap .ttl, .p-profile strong {
-    font-family: var(--round); letter-spacing: -0.02em; font-weight: 800;
+    font-family: var(--round); letter-spacing: -0.02em; font-weight: 600;
   }
-  .say .pre, .say .sub, .home-sub, .trail .where, .demo-chip, .demo-pill .tag, .picked-line, .photo-empty, .ar-tags span, .ar-badge { font-weight: 700; }
+  .say .pre, .say .sub, .home-sub, .trail .where, .demo-chip, .demo-pill .tag, .picked-line, .photo-empty, .ar-tags span, .ar-badge { font-weight: 500; }
   .scene-book figcaption, .tile small { font-weight: 600; }
   .field-label .hint { font-family: var(--font); font-weight: 600; letter-spacing: 0; }
   .kid-step { padding-bottom: 48px; }
@@ -151,14 +151,14 @@
   .panel + .panel { margin-top: 16px; }
   .field-label { display: block; font-size: 20px; margin-bottom: 10px; line-height: 1.35; }
   .hint { font-size: 13px; color: var(--muted); margin-top: 8px; }
-  .hint.adult::before { content: "보호자 안내 · "; font-weight: 800; color: var(--mint-d); }
+  .hint.adult::before { content: "보호자 안내 · "; font-weight: 600; color: var(--mint-d); }
   input[type="text"], textarea {
     width: 100%; min-height: 60px; padding: 14px 16px; border: 2px solid var(--line); border-radius: 18px; background: var(--bg); font-size: 19px; font-weight: 600;
   }
   textarea { min-height: 104px; resize: vertical; line-height: 1.45; }
   input[type="text"]:focus, textarea:focus { border-color: var(--coral); background: #fff; outline: none; box-shadow: 0 0 0 4px var(--peach); }
   ::placeholder { color: #9b99ae; font-weight: 500; }
-  .inline-msg { color: var(--coral-d); font-weight: 800; font-size: 14px; margin-top: 8px; }
+  .inline-msg { color: var(--coral-d); font-weight: 600; font-size: 14px; margin-top: 8px; }
   .inline-msg:empty { display: none; }
   .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }
   .row.between { justify-content: space-between; }
@@ -209,7 +209,7 @@
   .tile small { font-size: 13px; line-height: 1.4; margin-top: 4px; opacity: .95; }
   .tile.b small { color: var(--muted); }
   details.privacy { background: rgba(255,255,255,.8); border-radius: 20px; padding: 2px 16px; font-size: 13px; color: var(--muted); }
-  details.privacy summary { min-height: 52px; display: flex; align-items: center; font-weight: 700; font-size: 13px; color: var(--muted); cursor: pointer; }
+  details.privacy summary { min-height: 52px; display: flex; align-items: center; font-weight: 500; font-size: 13px; color: var(--muted); cursor: pointer; }
   details.privacy p { padding: 0 0 14px; }
 
   /* ---------- 장면 자리 ---------- */
@@ -234,7 +234,7 @@
   }
   .swatch .dot {
     width: 66px; height: 66px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 6px 14px rgba(38,36,58,.16);
-    display: flex; align-items: center; justify-content: center; font-size: 29px; font-weight: 900; color: transparent;
+    display: flex; align-items: center; justify-content: center; font-size: 29px; font-weight: 600; color: transparent;
   }
   .swatch .name { font-size: 16px; }
   .swatch[aria-pressed="true"] { border-color: var(--coral); background: var(--peach); }
@@ -278,7 +278,7 @@
   .p-bar .wrap { display: flex; align-items: center; gap: 10px; min-height: 64px; max-width: 720px; }
   .p-bar button { width: 46px; height: 46px; border-radius: 14px; border: 0; background: var(--bg); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
   .p-bar h2 { font-size: 20px; flex: 1; }
-  .p-bar .date { font-size: 13px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+  .p-bar .date { font-size: 13px; font-weight: 500; color: var(--muted); white-space: nowrap; }
   .p-body { padding-top: 14px; padding-bottom: 48px; max-width: 720px; font-size: 15px; }
   .sim-note { background: var(--lemon); color: var(--sim-ink); border-radius: 18px; padding: 12px 16px; font-size: 13px; line-height: 1.5; }
   .sim-note strong { display: block; font-size: 13.5px; }
@@ -290,7 +290,7 @@
   .p-arrive { display: flex; align-items: center; gap: 14px; background: var(--coral); color: #fff; border-radius: 24px; padding: 16px 18px; box-shadow: 0 12px 26px rgba(229,83,58,.28); }
   .p-arrive-ic { flex: 0 0 auto; width: 52px; height: 52px; border-radius: 16px; background: rgba(255,255,255,.95); color: var(--coral-d); display: grid; place-items: center; }
   .p-arrive-ic svg { width: 30px; height: 30px; }
-  .p-arrive strong { display: block; font-size: 16px; font-weight: 800; }
+  .p-arrive strong { display: block; font-size: 16px; font-weight: 600; }
   .p-arrive span { display: block; font-size: 13px; line-height: 1.5; }
   .p-card { background: #fff; border-radius: 24px; padding: 18px; margin-top: 14px; box-shadow: var(--shadow); }
   .p-card h3 { font-size: 18px; color: var(--ink); margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
@@ -302,7 +302,7 @@
   .p-photo .cap .lab { font-size: 13px; color: var(--muted); }
   .p-photo .cap .ttl { font-size: 24px; line-height: 1.3; }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 0; }
-  .chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px 6px 6px; border-radius: 999px; background: var(--bg); font-weight: 700; font-size: 15px; }
+  .chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px 6px 6px; border-radius: 999px; background: var(--bg); font-weight: 500; font-size: 15px; }
   .chip i { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(38,36,58,.18); display: inline-block; }
   .p-small { font-size: 13px; color: var(--muted); margin-top: 12px; line-height: 1.55; }
   .said { list-style: none; padding: 0; margin: 0; }
@@ -310,17 +310,17 @@
   .said li:first-child { border-top: 0; padding-top: 0; }
   .said li:last-child { padding-bottom: 0; }
   .said .q { font-size: 13px; color: var(--muted); }
-  .said .a { font-size: 18px; font-weight: 800; line-height: 1.4; margin-top: 2px; }
+  .said .a { font-size: 18px; font-weight: 600; line-height: 1.4; margin-top: 2px; }
   .said .a.none { color: var(--muted); font-weight: 600; font-size: 15px; }
   .listen { margin-top: 10px; min-height: 48px; font-size: 14px; padding: 6px 18px; border-radius: 14px; }
   .tips { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; counter-reset: tip; }
   .tips li { position: relative; background: var(--bg); border-radius: 18px; padding: 14px 14px 14px 58px; font-size: 14px; line-height: 1.55; }
   .tips li::before {
     counter-increment: tip; content: counter(tip); position: absolute; left: 14px; top: 14px; width: 32px; height: 32px; border-radius: 11px;
-    background: var(--mint); color: #fff; font-weight: 800; display: grid; place-items: center; font-size: 14px;
+    background: var(--mint); color: #fff; font-weight: 600; display: grid; place-items: center; font-size: 14px;
   }
   .tips li b { display: block; font-size: 16px; color: var(--ink); }
-  .tips .ex { display: block; margin-top: 6px; font-weight: 800; color: var(--mint-d); }
+  .tips .ex { display: block; margin-top: 6px; font-weight: 600; color: var(--mint-d); }
   .bye .line { display: flex; gap: 12px; align-items: center; margin-top: 10px; font-size: 15px; }
   .bye .line img { width: 54px; height: 54px; border-radius: 18px; object-fit: contain; background: var(--sky); padding: 4px; flex: 0 0 auto; }
   .bye .line + .line img { background: #fff; border: 2px solid var(--lilac); }
