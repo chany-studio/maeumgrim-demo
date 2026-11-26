@@ -359,7 +359,19 @@
   .ar-bottom { position: absolute; left: 12px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom)); display: grid; gap: 8px; justify-items: center; }
   .ar-status { width: 100%; background: rgba(255,255,255,.96); border-radius: 22px; padding: 14px 16px; font-size: 22px; text-align: center; }
   .ar-target { position: absolute; inset: 0; z-index: 4; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 16px; text-align: center; }
-  .ar-target img { max-width: 100%; max-height: 66vh; }
+  .ar-target img { max-width: 100%; max-height: 60vh; border-radius: 12px; }
+  .ar-target .pager { display: flex; align-items: center; gap: 14px; }
+  .ar-target .pager b { font-size: 20px; min-width: 64px; }
+  /* 찾는 동안 보여 주는 네모(책을 이 안에 크게 비추도록) */
+  .ar-guide { position: absolute; left: 50%; top: 46%; width: min(74vw, 56vh); aspect-ratio: 1; transform: translate(-50%, -50%); pointer-events: none; transition: opacity .3s; }
+  .ar-guide i { position: absolute; width: 34px; height: 34px; border: 5px solid rgba(255,255,255,.95); filter: drop-shadow(0 1px 3px rgba(0,0,0,.35)); }
+  .ar-guide i:nth-child(1) { left: 0; top: 0; border-right: 0; border-bottom: 0; border-top-left-radius: 14px; }
+  .ar-guide i:nth-child(2) { right: 0; top: 0; border-left: 0; border-bottom: 0; border-top-right-radius: 14px; }
+  .ar-guide i:nth-child(3) { left: 0; bottom: 0; border-right: 0; border-top: 0; border-bottom-left-radius: 14px; }
+  .ar-guide i:nth-child(4) { right: 0; bottom: 0; border-left: 0; border-top: 0; border-bottom-right-radius: 14px; }
+  .ar-guide.off { opacity: 0; }
+  @media (prefers-reduced-motion: no-preference) { .ar-guide:not(.off) { animation: arPulse 1.6s ease-in-out infinite; } }
+  @keyframes arPulse { 50% { transform: translate(-50%, -50%) scale(.96); } }
 
   @media (min-width: 860px) {
     .kid-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
@@ -474,7 +486,7 @@
           <div class="panel ar-offer" id="arOffer" hidden>
             <button type="button" class="btn btn-primary btn-big btn-block" id="arFromStory">AR로 보기</button>
             <button type="button" class="btn btn-secondary btn-block" id="skipAr" style="margin-top:12px">건너뛰기</button>
-            <p class="note">카메라로 그림을 비추면 캐릭터가 나타나는 실제 AR입니다. 그림책 7쪽을 비추면 포포와 루미가 나타나요.</p>
+            <p class="note">카메라로 그림을 비추면 캐릭터가 나타나는 실제 AR입니다. 그림책 어느 쪽을 비춰도 그 쪽 캐릭터가 나타나요.</p>
           </div>
         </div>
       </div>
@@ -623,26 +635,28 @@
   <div class="ar-intro" id="arIntro">
     <div class="inner">
       <div class="row between" style="margin-top:0">
-        <div class="ar-tags"><span class="real">실제 AR</span><span class="test">그림책 7쪽 인식</span></div>
+        <div class="ar-tags"><span class="real">실제 AR</span><span class="test">그림책 16쪽 인식</span></div>
         <button type="button" class="btn btn-quiet" id="arCloseIntro">닫기</button>
       </div>
       <h2 id="arTitle">그림책 AR</h2>
       <p id="arLead"></p>
       <p class="note" id="arWhat"></p>
       <ol>
-        <li>그림책 7쪽(포포가 나무 아래 혼자 앉아 있는 장면)을 펼쳐 주세요. 책이 없으면 「인식용 그림 보기」를 눌러 다른 화면에 띄워도 됩니다.</li>
+        <li>그림책을 아무 쪽이나 펼쳐 주세요. 책이 없으면 「인식용 그림 보기」를 눌러 다른 화면에 띄워도 됩니다.</li>
         <li>「카메라 켜기」를 누르고 카메라 사용을 허용해 주세요.</li>
-        <li>그림책 쪽이 화면에 꽉 차도록 비춰 주세요.</li>
+        <li>책을 평평하게 펴고, 밝은 곳에서 그림 한 쪽이 네모 안에 꽉 차도록 비춰 주세요.</li>
       </ol>
       <p class="note">카메라 영상은 이 휴대폰 안에서만 처리하고 어디에도 저장하거나 보내지 않습니다.</p>
+      <p class="note" id="arInApp" hidden>카카오톡·인스타그램 같은 앱 안에서 열면 카메라가 켜지지 않을 수 있어요. 오른쪽 위 메뉴에서 「다른 브라우저로 열기」(사파리·크롬)를 눌러 주세요.</p>
       <p class="inline-msg" id="arErr" role="alert"></p>
       <button type="button" class="btn btn-primary btn-big btn-block" id="arStart" style="margin-top:16px">카메라 켜기</button>
       <button type="button" class="btn btn-secondary btn-block" id="arShowTarget" style="margin-top:12px">인식용 그림 보기</button>
     </div>
   </div>
   <div class="ar-hud" id="arHud" hidden>
+    <div class="ar-guide" id="arGuide" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
     <div class="ar-top">
-      <span class="ar-badge">실제 AR · 그림책 7쪽</span>
+      <span class="ar-badge" id="arBadge">실제 AR</span>
       <button type="button" class="btn btn-primary" id="arClose">닫기</button>
     </div>
     <div class="ar-bottom">
@@ -652,6 +666,11 @@
   </div>
   <div class="ar-target" id="arTargetView" hidden role="dialog" aria-label="인식용 그림">
     <img id="arTargetImg" alt="AR 인식용 그림">
+    <div class="pager">
+      <button type="button" class="btn btn-secondary" id="arPrevPage" aria-label="앞 쪽">‹</button>
+      <b id="arPageNo">7쪽</b>
+      <button type="button" class="btn btn-secondary" id="arNextPage" aria-label="다음 쪽">›</button>
+    </div>
     <p>이 화면을 다른 휴대폰 카메라로 비춰 보세요.</p>
     <button type="button" class="btn btn-secondary" id="arCloseTarget">닫기</button>
   </div>
@@ -661,19 +680,43 @@
 (function () {
   "use strict";
 
-  // ===== AR 설정: 인식할 그림책 쪽이나 등장 캐릭터를 바꿀 때는 이 블록만 고친다 =====
-  // 그림은 《포포의 마음색 일기》 최종본(11.24)에서 가져옴. 캐릭터는 그림책 그림에서 배경만 빼고 오려 냄(다시 그리지 않음).
+  // ===== AR 설정: 쪽·캐릭터·위치를 바꿀 때는 이 블록만 고친다 =====
+  // 그림은 《포포의 마음색 일기》 최종본(11.24). 캐릭터는 그 쪽 그림에서 배경만 빼고 오려 냄(다시 그리지 않음).
+  // book-all.mind = 그림책 1~15쪽 15개(아래 pages 순서). 16쪽은 14쪽과 같은 창가 그림이라 14쪽으로 알아본다.
+  // 13·15쪽은 방 배경이 같아 헷갈리므로, 두 쪽 모두 그림의 오른쪽 위(가로 22~100%, 세로 0~72%)만 인식 대상으로 삼았다.
+  // 캐릭터 좌표: 인식 대상 가로폭 = 1, 가운데가 0, 위가 +. x·y는 그림책 속 그 캐릭터 자리(그 자리에서 떠오른다).
+  // move: hop(깡충) bob(둥실) jump(펄쩍) stomp(씩씩) perch(앉아서 까딱) fly(날갯짓)
   var AR = {
     libs: ["ar/lib/aframe-v1.5.0.min.js", "ar/lib/mindar-image-aframe.prod.js"],
-    targetSrc: "ar/targets/book-p07.mind",   // 인식 대상(그림책 7쪽을 컴파일한 .mind 파일)
-    targetImage: "ar/targets/book-p07.jpg",  // 「인식용 그림 보기」에 띄울 그림
-    targetName: "그림책",
-    foundText: "포포와 루미가 나타났어!",
-    // 인식된 쪽 위에 나타날 캐릭터. 좌표는 쪽 가로폭 = 1 기준(가운데가 0, 위가 +)
-    characters: [
-      // 서운해하던 7쪽 포포 바로 위에 웃는 포포가 겹쳐 나타나고, 루미가 옆으로 날아든다
-      { id: "arPopo", name: "포포", src: "ar/chars/popo.png", ratio: 543 / 595, width: 0.45, pos: "-0.05 -0.15 0.06", bob: 0.05, dur: 650 },
-      { id: "arLumi", name: "루미", src: "ar/chars/lumi-fly.png", ratio: 413 / 321, width: 0.32, pos: "-0.36 0.12 0.14", bob: 0.08, dur: 520, sway: 0.07 }
+    targetSrc: "ar/targets/book-all.mind",
+    charDir: "ar/chars16/",
+    pageImage: function (n) { return "ar/targets/pages/p" + (n < 10 ? "0" : "") + n + ".jpg"; },
+    pageCount: 16,
+    // 흔들림·따라옴 조절(MindAR). 실제 휴대폰에서 다시 맞출 출발값이다.
+    track: "filterMinCF: 0.001; filterBeta: 100; warmupTolerance: 6; missTolerance: 10",
+    lift: 0.05,   // 캐릭터가 종이에서 떠오르는 높이
+    pages: [
+      { page: 1,  chars: [{ n: "포포", src: "p02_1", x: -0.03, y: -0.2861, w: 0.19, r: 0.6781, move: "hop" }] },
+      { page: 2,  chars: [{ n: "포포", src: "p02_1", x: -0.0187, y: -0.0593, w: 0.4089, r: 0.6781, move: "hop" }] },
+      { page: 3,  chars: [{ n: "포포", src: "p03_2", x: 0.1535, y: -0.1338, w: 0.4751, r: 0.7679, move: "hop" }] },
+      { page: 4,  chars: [{ n: "다람이", src: "p04_3", x: 0.2159, y: -0.1902, w: 0.4669, r: 1.1484, move: "bob" },
+                          { n: "루미", src: "p04_4", x: 0.1932, y: 0.2051, w: 0.2398, r: 1.6771, move: "perch" }] },
+      { page: 5,  chars: [{ n: "포포", src: "p05_5", x: 0.0556, y: -0.0592, w: 0.4799, r: 0.8317, move: "bob" }] },
+      { page: 6,  chars: [{ n: "다람이", src: "p06_6", x: 0.0654, y: -0.1573, w: 0.5151, r: 1.1641, move: "jump" },
+                          { n: "루미", src: "p06_7", x: 0.1539, y: 0.2542, w: 0.2413, r: 1.3574, move: "perch" }] },
+      // 7쪽: 서운해하던 포포 위에 웃는 포포(12쪽 그림)가 겹쳐 나타나고, 루미(8쪽 그림)가 날아든다
+      { page: 7,  chars: [{ n: "포포", src: "p07_popo", x: -0.05, y: -0.15, w: 0.45, r: 543 / 595, move: "bob" },
+                          { n: "루미", src: "p07_lumi", x: -0.36, y: 0.12, w: 0.32, r: 413 / 321, move: "fly" }] },
+      { page: 8,  chars: [{ n: "다람이", src: "p08_8", x: 0.0596, y: -0.1239, w: 0.5414, r: 1.1043, move: "stomp" },
+                          { n: "루미", src: "p08_9", x: -0.304, y: 0.2254, w: 0.3222, r: 1.296, move: "fly" }] },
+      { page: 9,  chars: [{ n: "다람이", src: "p09_10", x: -0.1649, y: -0.1959, w: 0.4794, r: 1.136, move: "bob" }] },
+      { page: 10, chars: [{ n: "루미", src: "p10_11", x: 0.2744, y: -0.0956, w: 0.3382, r: 1.2929, move: "perch" }] },
+      { page: 11, chars: [{ n: "다람이", src: "p11_12", x: 0.045, y: -0.1602, w: 0.5201, r: 1.2552, move: "bob" }] },
+      { page: 12, chars: [{ n: "포포", src: "p12_13", x: -0.0852, y: -0.1425, w: 0.4317, r: 0.9117, move: "bob" },
+                          { n: "루미", src: "p12_14", x: -0.3212, y: 0.0868, w: 0.2897, r: 1.2787, move: "fly" }] },
+      { page: 13, chars: [{ n: "포포", src: "p13_15", x: -0.1544, y: -0.3348, w: 0.6142, r: 0.9003, move: "bob" }] },
+      { page: 14, label: "14·16쪽", chars: [{ n: "루미", src: "p14_16", x: 0.0898, y: -0.0121, w: 0.2681, r: 1.3648, move: "fly" }] },
+      { page: 15, chars: [{ n: "포포", src: "p15_17", x: -0.1097, y: -0.3272, w: 0.7053, r: 0.9776, move: "bob" }] }
     ]
   };
 
@@ -723,7 +766,8 @@
     ["나는 루미야", "L01"], ["이 장면에서 포포는", "L02"], ["그렇게 생각했구나", "L03"], ["다음 이야기를 해 보자", "L04"],
     ["포포처럼 그런 마음이 든", "L05"], ["포포처럼 속상했던", "L06"], ["포포처럼 기뻤던", "L07"], ["그랬구나", "L08"],
     ["말하고 싶을 때 들려줘", "L09"], ["그때 어떤 마음이 들었니", "L10"], ["그런 마음이 들었구나", "L11"], ["이야기해 줘서 고마워", "L12"],
-    ["어떻게 움직이는지", "L13"], ["나타났어", "L14"],
+    ["어떻게 움직이는지", "L13"], ["포포와 루미가 나타났어", "L14"], ["다람이와 루미가 나타났어", "L17"],
+    ["포포가 나타났어", "L15"], ["다람이가 나타났어", "L16"], ["루미가 나타났어", "L18"],
     ["나는 토리야", "T01"], ["그때 마음을 색으로", "T02"], ["지금 마음을 색으로", "T03"], ["그 색을 골랐구나", "T04"],
     ["네 마음을 그림으로", "T05"], ["그림 속에 누가", "T06"], ["무슨 일이 있었니", "T07"], ["제목을 붙여", "T08"], ["그림과 함께 간직해", "T09"]
   ];
@@ -1270,7 +1314,8 @@
   }
 
   // ---------- 그림책 AR ----------
-  var arFrom = "start", arLibs = null, arScene = null, arState = "closed";   // closed | intro | starting | live
+  var arFrom = "start", arLibs = null, arMind = null, arScene = null, arState = "closed";   // closed | intro | starting | live
+  var arCur = -1, arSpoke = false, arViewPage = 7;   // arSpoke: '나타났어!'는 카메라를 켠 뒤 처음 한 번만 말한다
   function loadScript(src) {
     return new Promise(function (ok, fail) {
       var s = document.createElement("script"); s.src = src; s.async = false;
@@ -1283,30 +1328,63 @@
       arLibs = AR.libs.reduce(function (p, src) { return p.then(function () { return loadScript(src); }); }, Promise.resolve());
       arLibs.catch(function () { arLibs = null; });
     }
-    return arLibs;
+    if (!arMind) {   // 인식 파일(약 5MB)을 미리 받아 두면 카메라를 켤 때 바로 쓴다
+      arMind = fetch(AR.targetSrc).then(function (r) { if (!r.ok) throw new Error("mind"); return r.blob(); });
+      arMind.catch(function () { arMind = null; });
+    }
+    return Promise.all([arLibs, arMind]);
   }
+  function pageLabel(pg) { return pg.label || (pg.page + "쪽"); }
+  // "포포가 나타났어!" / "다람이와 루미가 나타났어!" (목소리 파일과 같은 문장)
+  function namesOf(pg) {
+    var list = [];
+    pg.chars.forEach(function (c) { if (list.indexOf(c.n) === -1) list.push(c.n); });
+    return list;
+  }
+  function foundText(pg) {
+    var names = namesOf(pg);
+    var who = names.length > 1 ? names[0] + (hasBatchim(names[0]) ? "과 " : "와 ") + ga(names[1]) : ga(names[0]);
+    return who + " 나타났어!";
+  }
+  var MOVES = {
+    hop:   { pos: "0 0.035 0", dur: 420, ease: "easeOutQuad" },
+    bob:   { pos: "0 0.02 0", dur: 1000, ease: "easeInOutSine", tilt: 2 },
+    jump:  { pos: "0 0.05 0", dur: 320, ease: "easeOutQuad" },
+    stomp: { pos: "0 0.012 0", dur: 280, ease: "easeInOutSine", tilt: 5 },
+    perch: { pos: "0 0.022 0", dur: 520, ease: "easeOutQuad", tilt: 4 },
+    fly:   { pos: "0.035 0.045 0", dur: 700, ease: "easeInOutSine", tilt: 6, flying: true }
+  };
   function buildScene() {
     if (arScene) return arScene;
-    var assets = "", ents = "";
-    AR.characters.forEach(function (c, i) {
-      var h = c.width / c.ratio;
-      assets += '<img id="arImg' + i + '" src="' + c.src + '">';
-      var anim = reduceMotion ? "" :
-        ' animation__bob="property: position; from: 0 0 0; to: ' + (c.sway || 0) + ' ' + c.bob + ' 0; dur: ' + c.dur + '; dir: alternate; loop: true; easing: easeInOutSine"' +
-        ' animation__tilt="property: rotation; from: 0 0 -5; to: 0 0 5; dur: ' + (c.dur * 2) + '; dir: alternate; loop: true; easing: easeInOutSine"';
-      ents += '<a-entity id="' + c.id + '" class="ar-char" position="' + c.pos + '" scale="0.001 0.001 0.001">' +
-                '<a-entity' + anim + '>' +
-                  '<a-image src="#arImg' + i + '" width="' + c.width + '" height="' + h.toFixed(3) + '" material="shader: flat; transparent: true; alphaTest: 0.05"></a-image>' +
-                '</a-entity>' +
-              '</a-entity>';
+    var assets = '<img id="arShadow" src="' + AR.charDir + 'shadow.webp" crossorigin="anonymous">', ents = "", seen = {};
+    AR.pages.forEach(function (pg, t) {
+      var inner = "";
+      pg.chars.forEach(function (c, k) {
+        if (!seen[c.src]) { seen[c.src] = 1; assets += '<img id="arI_' + c.src + '" src="' + AR.charDir + c.src + '.webp" crossorigin="anonymous">'; }
+        var m = MOVES[c.move] || MOVES.bob, h = c.w / c.r;
+        var anim = reduceMotion ? "" :
+          ' animation__mv="property: position; from: 0 0 0; to: ' + m.pos + '; dur: ' + m.dur + '; dir: alternate; loop: true; easing: ' + m.ease + '"' +
+          (m.tilt ? ' animation__tilt="property: rotation; from: 0 0 ' + (-m.tilt) + '; to: 0 0 ' + m.tilt + '; dur: ' + (m.dur * 2) + '; dir: alternate; loop: true; easing: easeInOutSine"' : "");
+        var sw = c.w * (m.flying ? 0.55 : 0.8), sy = c.y - h / 2 + (m.flying ? -0.04 : 0.01);
+        inner +=
+          // 그림자: 종이 위에 붙어 있다(떠오르지 않음)
+          '<a-image class="ar-shadow" src="#arShadow" position="' + c.x + ' ' + sy.toFixed(4) + ' 0.002" width="' + sw.toFixed(4) + '" height="' + (sw * 0.375).toFixed(4) + '"' +
+            ' material="shader: flat; transparent: true; opacity: 0; depthWrite: false" data-op="' + (m.flying ? 0.55 : 0.9) + '"></a-image>' +
+          // 캐릭터: 그림책 속 그 자리에서 종이 위로 떠오른다
+          '<a-entity class="ar-char" data-x="' + c.x + '" data-y="' + c.y + '" data-k="' + k + '" position="' + c.x + ' ' + c.y + ' 0.004" scale="0.94 0.94 0.94">' +
+            '<a-entity' + anim + '>' +
+              '<a-image src="#arI_' + c.src + '" width="' + c.w + '" height="' + h.toFixed(4) + '" material="shader: flat; transparent: true; alphaTest: 0.01; opacity: 0"></a-image>' +
+            '</a-entity>' +
+          '</a-entity>';
+      });
+      ents += '<a-entity class="ar-page" data-t="' + t + '" mindar-image-target="targetIndex: ' + t + '">' + inner + '</a-entity>';
     });
     $("arStage").innerHTML =
-      '<a-scene embedded mindar-image="imageTargetSrc: ' + AR.targetSrc + '; autoStart: false; uiLoading: no; uiError: no; uiScanning: no; filterMinCF: 0.0001; filterBeta: 0.001"' +
-      ' color-space="sRGB" renderer="colorManagement: true; physicallyCorrectLights: true" vr-mode-ui="enabled: false"' +
+      '<a-scene embedded mindar-image="imageTargetSrc: ' + AR.targetSrc + '; maxTrack: 1; ' + AR.track + '; autoStart: false; uiLoading: no; uiError: no; uiScanning: no"' +
+      ' color-space="sRGB" renderer="colorManagement: true; anisotropy: 4; sortTransparentObjects: true; maxCanvasWidth: 1280; maxCanvasHeight: 1280" vr-mode-ui="enabled: false"' +
       ' device-orientation-permission-ui="enabled: false" loading-screen="enabled: false">' +
         '<a-assets>' + assets + '</a-assets>' +
-        '<a-camera position="0 0 0" look-controls="enabled: false"></a-camera>' +
-        '<a-entity id="arTarget" mindar-image-target="targetIndex: 0">' + ents + '</a-entity>' +
+        '<a-camera position="0 0 0" look-controls="enabled: false"></a-camera>' + ents +
       '</a-scene>';
     arScene = $("arStage").querySelector("a-scene");
     arScene.addEventListener("arReady", function () {
@@ -1315,7 +1393,7 @@
       resetTarget();
       document.documentElement.classList.add("ar-live");
       $("arIntro").hidden = true; $("arHud").hidden = false;
-      $("arStatus").textContent = eul(AR.targetName) + " 화면에 비춰 봐.";
+      searching(false);
       window.dispatchEvent(new Event("resize"));
     });
     arScene.addEventListener("arError", function () {
@@ -1324,29 +1402,59 @@
       resetStartBtn();
       $("arErr").textContent = "카메라를 켜지 못했습니다. 카메라 사용을 허용했는지 확인한 뒤 다시 눌러 주세요.";
     });
-    var target = $("arTarget");
-    target.addEventListener("targetFound", function () {
-      $("arStatus").textContent = AR.foundText;
-      if (!arSpoke) { arSpoke = true; speak($("arStatus")); }
-      AR.characters.forEach(function (c, i) {
-        var ch = $(c.id);
-        ch.removeAttribute("animation__pop");
-        ch.setAttribute("scale", "0.001 0.001 0.001");
-        ch.setAttribute("animation__pop", "property: scale; to: 1 1 1; delay: " + (reduceMotion ? 0 : i * 250) + "; dur: " + (reduceMotion ? 1 : 500) + "; easing: easeOutBack");
-      });
+    Array.prototype.forEach.call(arScene.querySelectorAll(".ar-page"), function (el) {
+      var t = +el.getAttribute("data-t");
+      el.addEventListener("targetFound", function () { showPage(el, t); });
+      el.addEventListener("targetLost", function () { if (arCur === t) { arCur = -1; searching(true); } });
     });
-    target.addEventListener("targetLost", function () { $("arStatus").textContent = eul(AR.targetName) + " 다시 비춰 봐."; });
     return arScene;
+  }
+  // 찾는 중: 네모 안내를 보이고 문구를 바꾼다
+  function searching(again) {
+    $("arGuide").classList.remove("off");
+    $("arBadge").textContent = "실제 AR";
+    $("arStatus").textContent = again ? "그림책을 다시 비춰 봐." : "그림책 한 쪽을 네모 안에 크게 비춰 봐.";
+  }
+  function showPage(el, t) {
+    var pg = AR.pages[t];
+    arCur = t;
+    $("arGuide").classList.add("off");
+    $("arBadge").textContent = "실제 AR · 그림책 " + pageLabel(pg);
+    var st = $("arStatus"); st.textContent = "";
+    var a = document.createElement("span"); a.textContent = pageLabel(pg) + " · ";
+    // 처음 찾았을 때만 "~가 나타났어!"라고 말하고, 그 뒤로 쪽을 넘기면 쪽 번호와 이름만 조용히 바꾼다
+    var b = document.createElement("span");
+    b.textContent = arSpoke ? namesOf(pg).join("·") : foundText(pg);
+    st.appendChild(a); st.appendChild(b);
+    if (!arSpoke) { arSpoke = true; speak(st); }
+    // 종이에서 떠오르기: 자리·크기·투명도를 처음으로 돌린 뒤 차례로 나타낸다
+    Array.prototype.forEach.call(el.querySelectorAll(".ar-char"), function (ch) {
+      var k = +ch.getAttribute("data-k"), x = ch.getAttribute("data-x"), y = ch.getAttribute("data-y");
+      var img = ch.querySelector("a-image"), d = reduceMotion ? 0 : k * 180;
+      ["animation__lift", "animation__grow"].forEach(function (n) { ch.removeAttribute(n); });
+      img.removeAttribute("animation__fade");
+      ch.setAttribute("position", x + " " + y + " 0.004"); ch.setAttribute("scale", "0.94 0.94 0.94");
+      img.setAttribute("material", "opacity", 0);
+      img.setAttribute("animation__fade", "property: material.opacity; from: 0; to: 1; dur: " + (reduceMotion ? 1 : 260) + "; delay: " + d);
+      ch.setAttribute("animation__lift", "property: position; to: " + x + " " + y + " " + AR.lift + "; dur: " + (reduceMotion ? 1 : 650) + "; delay: " + d + "; easing: easeOutBack");
+      ch.setAttribute("animation__grow", "property: scale; to: 1 1 1; dur: " + (reduceMotion ? 1 : 650) + "; delay: " + d + "; easing: easeOutBack");
+    });
+    Array.prototype.forEach.call(el.querySelectorAll(".ar-shadow"), function (sh, k) {
+      sh.removeAttribute("animation__fade");
+      sh.setAttribute("material", "opacity", 0);
+      sh.setAttribute("animation__fade", "property: material.opacity; from: 0; to: " + sh.getAttribute("data-op") + "; dur: " + (reduceMotion ? 1 : 500) + "; delay: " + (reduceMotion ? 0 : k * 180));
+    });
   }
   function resetStartBtn() { $("arStart").disabled = false; $("arStart").textContent = "카메라 켜기"; }
   function openAR(from) {
     if (active) stopActive();
     stopVoice();
-    arSpoke = false;
+    arSpoke = false; arCur = -1;
     arFrom = from;
     arState = "intro";
-    $("arLead").textContent = from === "story" ? "포포가 어떻게 움직이는지 볼까?" : "카메라로 그림을 비추면 캐릭터가 나타나요.";
-    $("arWhat").textContent = "카메라가 그림책 쪽을 알아보는 부분은 실제로 작동하는 AR입니다. 포포와 루미의 움직임은 그림책 그림으로 미리 만들어 둔 애니메이션입니다.";
+    $("arLead").textContent = from === "story" ? "포포가 어떻게 움직이는지 볼까?" : "카메라로 그림책을 비추면 그 쪽의 캐릭터가 나타나요.";
+    $("arWhat").textContent = "카메라가 그림책의 어느 쪽인지 알아보는 부분은 실제로 작동하는 AR입니다. 캐릭터는 그 쪽 그림에서 오려 낸 것이고, 움직임은 미리 만들어 둔 애니메이션입니다.";
+    $("arInApp").hidden = !/KAKAOTALK|Instagram|FBAN|FBAV|NAVER\(|Line\//i.test(navigator.userAgent);
     $("arErr").textContent = "";
     $("arIntro").hidden = false; $("arHud").hidden = true; $("arTargetView").hidden = true;
     $("arLayer").hidden = false;
@@ -1361,10 +1469,11 @@
       $("arErr").textContent = "이 화면에서는 카메라를 쓸 수 없습니다. 보안 주소(https)로 열어 주세요.";
       return;
     }
-    $("arStart").disabled = true; $("arStart").textContent = "카메라를 켜는 중…";
+    $("arStart").disabled = true; $("arStart").textContent = "AR 준비 중…";
     arState = "starting";
     loadArLibs().then(function () {
       if (arState !== "starting") return;
+      $("arStart").textContent = "카메라를 켜는 중…";
       var scene = buildScene();
       var go = function () {
         if (arState !== "starting") return;
@@ -1393,12 +1502,19 @@
   // 다시 열었을 때 '찾았다'를 새로 알리도록 인식 상태를 처음으로 되돌린다
   function resetTarget() {
     try {
-      var tc = $("arTarget") && $("arTarget").components["mindar-image-target"];
-      if (tc) { tc.el.object3D.visible = false; tc.el.object3D.matrix = tc.invisibleMatrix; }
-      AR.characters.forEach(function (c) { var ch = $(c.id); if (ch) { ch.removeAttribute("animation__pop"); ch.setAttribute("scale", "0.001 0.001 0.001"); } });
+      arCur = -1;
+      Array.prototype.forEach.call(document.querySelectorAll("#arStage .ar-page"), function (el) {
+        var tc = el.components["mindar-image-target"];
+        if (tc) { tc.el.object3D.visible = false; tc.el.object3D.matrix = tc.invisibleMatrix; }
+      });
     } catch (e) {}
   }
-  var arSpoke = false;
+  // 다른 앱으로 넘어가면 카메라 계산을 잠시 멈춘다(배터리·발열)
+  document.addEventListener("visibilitychange", function () {
+    if (arState !== "live" || !arScene) return;
+    var sys = arScene.systems["mindar-image-system"];
+    try { if (document.hidden) sys.pause(true); else sys.unpause(); } catch (e) {}
+  });
   function closeAR(silent) {
     stopVoice();
     if (arState === "closed") return;
@@ -1412,10 +1528,18 @@
   }
   $("arClose").addEventListener("click", function () { closeAR(); });
   $("arCloseIntro").addEventListener("click", function () { closeAR(); });
-  function showTarget(on) { $("arTargetView").hidden = !on; if (on) $("arTargetImg").src = AR.targetImage; }
+  function setViewPage(n) {
+    arViewPage = (n + AR.pageCount - 1) % AR.pageCount + 1;
+    $("arTargetImg").src = AR.pageImage(arViewPage);
+    $("arTargetImg").alt = "AR 인식용 그림: 그림책 " + arViewPage + "쪽";
+    $("arPageNo").textContent = arViewPage + "쪽";
+  }
+  function showTarget(on) { $("arTargetView").hidden = !on; if (on) setViewPage(arViewPage); }
   $("arShowTarget").addEventListener("click", function () { showTarget(true); });
   $("arShowTarget2").addEventListener("click", function () { showTarget(true); });
   $("arCloseTarget").addEventListener("click", function () { showTarget(false); });
+  $("arPrevPage").addEventListener("click", function () { setViewPage(arViewPage - 1); });
+  $("arNextPage").addEventListener("click", function () { setViewPage(arViewPage + 1); });
   document.addEventListener("keydown", function (e) {
     if (e.key !== "Escape" || arState === "closed") return;
     if (!$("arTargetView").hidden) showTarget(false); else closeAR();

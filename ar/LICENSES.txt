@@ -47,3 +47,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+
+===== 고친 부분 (2026-11-26) =====
+mindar-image-aframe.prod.js 안의 인식 계산 부분 한 곳을 고쳤습니다.
+원래는 여러 쪽을 차례로 맞춰 보다가 처음 맞은 쪽을 골랐는데, 배경이 같은 쪽(2·3쪽, 13·15쪽 등)이 헷갈려서
+모든 쪽을 맞춰 본 뒤 가장 많이 들어맞은 쪽을 고르도록 바꿨습니다. 나머지는 원본 그대로입니다.
