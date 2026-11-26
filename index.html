@@ -370,6 +370,7 @@
   .ar-guide i:nth-child(3) { left: 0; bottom: 0; border-right: 0; border-top: 0; border-bottom-left-radius: 14px; }
   .ar-guide i:nth-child(4) { right: 0; bottom: 0; border-left: 0; border-top: 0; border-bottom-right-radius: 14px; }
   .ar-guide.off { opacity: 0; }
+  .ar-diag { position: absolute; left: 8px; right: 8px; top: calc(54px + env(safe-area-inset-top)); background: rgba(0,0,0,.72); color: #fff; font: 12px/1.45 ui-monospace, Menlo, monospace; border-radius: 10px; padding: 8px 10px; white-space: pre-wrap; pointer-events: none; }
   @media (prefers-reduced-motion: no-preference) { .ar-guide:not(.off) { animation: arPulse 1.6s ease-in-out infinite; } }
   @keyframes arPulse { 50% { transform: translate(-50%, -50%) scale(.96); } }
 
@@ -655,6 +656,7 @@
   </div>
   <div class="ar-hud" id="arHud" hidden>
     <div class="ar-guide" id="arGuide" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <div class="ar-diag" id="arDiag" hidden></div>
     <div class="ar-top">
       <span class="ar-badge" id="arBadge">실제 AR</span>
       <button type="button" class="btn btn-primary" id="arClose">닫기</button>
@@ -694,7 +696,7 @@
     pageImage: function (n) { return "ar/targets/pages/p" + (n < 10 ? "0" : "") + n + ".jpg"; },
     pageCount: 16,
     // 흔들림·따라옴 조절(MindAR). 실제 휴대폰에서 다시 맞출 출발값이다.
-    track: "filterMinCF: 0.001; filterBeta: 10; warmupTolerance: 6; missTolerance: 10",
+    track: "filterMinCF: 0.001; filterBeta: 10; warmupTolerance: 6; missTolerance: 15",
     pages: [
       { page: 1,  chars: [{ n: "포포", src: "p02_1", x: -0.03, y: -0.2861, w: 0.19, r: 0.6781, move: "hop" }] },
       { page: 2,  chars: [{ n: "포포", src: "p02_1", x: -0.0187, y: -0.0593, w: 0.4089, r: 0.6781, move: "hop" }] },
@@ -1490,6 +1492,7 @@
     arScene.addEventListener("arReady", function () {
       if (arState !== "starting") { stopCamera(); return; }   // 준비 중에 닫았으면 바로 끈다
       arState = "live";
+      if (AR_DIAG) startDiag();
       resetTarget();
       document.documentElement.classList.add("ar-live");
       $("arIntro").hidden = true; $("arHud").hidden = false;
@@ -1508,6 +1511,36 @@
       el.addEventListener("targetLost", function () { if (arCur === t) { arCur = -1; arLostAt = performance.now(); searching(true); } });
     });
     return arScene;
+  }
+  // ----- 점검 화면(주소 끝에 ?점검): 인식 엔진이 보고 있는 것을 글자로 보여 준다(실기기 문제 찾기용) -----
+  var AR_DIAG = /점검|debug/.test(decodeURIComponent(location.search));
+  var diag = { n: 0, ms: 0, last: "", t0: 0, timer: null };
+  function startDiag() {
+    var sys = arScene.systems["mindar-image-system"], c = sys && sys.controller;
+    if (!c || c.__diag) return;
+    c.__diag = true;
+    var orig = c._workerMatch.bind(c);
+    c._workerMatch = function (fp, idx) {
+      var t0 = performance.now();
+      return orig(fp, idx).then(function (r) {
+        diag.n++; diag.ms = performance.now() - t0;
+        var al = (r.debugExtra && r.debugExtra.all || []).slice().sort(function (a, b) { return b[1] - a[1]; });
+        diag.last = "특징점 " + fp.length + " · 후보 " + (al.slice(0, 3).map(function (x) { return (x[0] + 1) + "쪽:" + x[1]; }).join(", ") || "없음") +
+                    " → " + (r.targetIndex === -1 ? (al.length ? "헷갈려서 보류/불충분" : "못 찾음") : (r.targetIndex + 1) + "쪽");
+        return r;
+      });
+    };
+    diag.t0 = performance.now();
+    $("arDiag").hidden = false;
+    clearInterval(diag.timer);
+    diag.timer = setInterval(function () {
+      if (arState !== "live") { clearInterval(diag.timer); return; }
+      var v = $("arStage").querySelector("video"), ts = c.trackingStates || [];
+      var shown = ts.map(function (x, i) { return x.showing ? (i + 1) + "쪽" : null; }).filter(Boolean).join(",") || "-";
+      var trk = ts.map(function (x, i) { return x.isTracking ? (i + 1) + "쪽" : null; }).filter(Boolean).join(",") || "-";
+      $("arDiag").textContent = "점검 · 영상 " + (v ? v.videoWidth + "×" + v.videoHeight : "?") + " · 찾기 " + diag.n + "회(" + Math.round(diag.ms) + "ms)\n" +
+        diag.last + "\n따라가는 쪽 " + trk + " · 보이는 쪽 " + shown;
+    }, 300);
   }
   // 찾는 중: 네모 안내를 보이고 문구를 바꾼다
   function searching(again) {
