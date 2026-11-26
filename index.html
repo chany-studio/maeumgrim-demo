@@ -685,7 +685,8 @@
   // book-all.mind = 그림책 1~15쪽 15개(아래 pages 순서). 16쪽은 14쪽과 같은 창가 그림이라 14쪽으로 알아본다.
   // 13·15쪽은 방 배경이 같아 헷갈리므로, 두 쪽 모두 그림의 오른쪽 위(가로 22~100%, 세로 0~72%)만 인식 대상으로 삼았다.
   // 캐릭터 좌표: 인식 대상 가로폭 = 1, 가운데가 0, 위가 +. x·y는 그림책 속 그 캐릭터 자리(그 자리에서 떠오른다).
-  // move: hop(깡충) bob(둥실) jump(펄쩍) stomp(씩씩) perch(앉아서 까딱) fly(날갯짓)
+  // move(그림책 내용에 맞춘 움직임): hop 깡충깡충 · bounce 신나서 통통 · bob 둥실 · jump 놀라서 펄쩍 · stomp 뒤뚱뒤뚱 씩씩
+  //   nod 끄덕끄덕 · sway 좌우로 살랑 · perch 콩콩 · fly 날갯짓하며 떠 있음 · show 앞으로 내밀 듯 까딱
   var AR = {
     libs: ["ar/lib/aframe-v1.5.0.min.js", "ar/lib/mindar-image-aframe.prod.js"],
     targetSrc: "ar/targets/book-all.mind",
@@ -700,22 +701,22 @@
       { page: 3,  chars: [{ n: "포포", src: "p03_2", x: 0.1535, y: -0.1338, w: 0.4751, r: 0.7679, move: "hop" }] },
       { page: 4,  chars: [{ n: "다람이", src: "p04_3", x: 0.2159, y: -0.1902, w: 0.4669, r: 1.1484, move: "bob" },
                           { n: "루미", src: "p04_4", x: 0.1932, y: 0.2051, w: 0.2398, r: 1.6771, move: "perch" }] },
-      { page: 5,  chars: [{ n: "포포", src: "p05_5", x: 0.0556, y: -0.0592, w: 0.4799, r: 0.8317, move: "bob" }] },
+      { page: 5,  chars: [{ n: "포포", src: "p05_5", x: 0.0556, y: -0.0592, w: 0.4799, r: 0.8317, move: "bounce" }] },
       { page: 6,  chars: [{ n: "다람이", src: "p06_6", x: 0.0654, y: -0.1573, w: 0.5151, r: 1.1641, move: "jump" },
-                          { n: "루미", src: "p06_7", x: 0.1539, y: 0.2542, w: 0.2413, r: 1.3574, move: "perch" }] },
+                          { n: "루미", src: "p06_7", x: 0.1539, y: 0.2542, w: 0.2413, r: 1.3574, move: "sway" }] },
       // 7쪽: 서운해하던 포포 위에 웃는 포포(12쪽 그림)가 겹쳐 나타나고, 루미(8쪽 그림)가 날아든다
-      { page: 7,  chars: [{ n: "포포", src: "p07_popo", x: -0.05, y: -0.15, w: 0.45, r: 543 / 595, move: "bob" },
+      { page: 7,  chars: [{ n: "포포", src: "p07_popo", x: -0.05, y: -0.15, w: 0.45, r: 543 / 595, move: "sway" },
                           { n: "루미", src: "p07_lumi", x: -0.36, y: 0.12, w: 0.32, r: 413 / 321, move: "fly" }] },
       { page: 8,  chars: [{ n: "다람이", src: "p08_8", x: 0.0596, y: -0.1239, w: 0.5414, r: 1.1043, move: "stomp" },
                           { n: "루미", src: "p08_9", x: -0.304, y: 0.2254, w: 0.3222, r: 1.296, move: "fly" }] },
-      { page: 9,  chars: [{ n: "다람이", src: "p09_10", x: -0.1649, y: -0.1959, w: 0.4794, r: 1.136, move: "bob" }] },
-      { page: 10, chars: [{ n: "루미", src: "p10_11", x: 0.2744, y: -0.0956, w: 0.3382, r: 1.2929, move: "perch" }] },
-      { page: 11, chars: [{ n: "다람이", src: "p11_12", x: 0.045, y: -0.1602, w: 0.5201, r: 1.2552, move: "bob" }] },
-      { page: 12, chars: [{ n: "포포", src: "p12_13", x: -0.0852, y: -0.1425, w: 0.4317, r: 0.9117, move: "bob" },
+      { page: 9,  chars: [{ n: "다람이", src: "p09_10", x: -0.1649, y: -0.1959, w: 0.4794, r: 1.136, move: "nod" }] },
+      { page: 10, chars: [{ n: "루미", src: "p10_11", x: 0.2744, y: -0.0956, w: 0.3382, r: 1.2929, move: "bounce" }] },
+      { page: 11, chars: [{ n: "다람이", src: "p11_12", x: 0.045, y: -0.1602, w: 0.5201, r: 1.2552, move: "sway" }] },
+      { page: 12, chars: [{ n: "포포", src: "p12_13", x: -0.0852, y: -0.1425, w: 0.4317, r: 0.9117, move: "bounce" },
                           { n: "루미", src: "p12_14", x: -0.3212, y: 0.0868, w: 0.2897, r: 1.2787, move: "fly" }] },
-      { page: 13, chars: [{ n: "포포", src: "p13_15", x: -0.1544, y: -0.3348, w: 0.6142, r: 0.9003, move: "bob" }] },
+      { page: 13, chars: [{ n: "포포", src: "p13_15", x: -0.1544, y: -0.3348, w: 0.6142, r: 0.9003, move: "nod" }] },
       { page: 14, label: "14·16쪽", chars: [{ n: "루미", src: "p14_16", x: 0.0898, y: -0.0121, w: 0.2681, r: 1.3648, move: "fly" }] },
-      { page: 15, chars: [{ n: "포포", src: "p15_17", x: -0.1097, y: -0.3272, w: 0.7053, r: 0.9776, move: "bob" }] }
+      { page: 15, chars: [{ n: "포포", src: "p15_17", x: -0.1097, y: -0.3272, w: 0.7053, r: 0.9776, move: "show" }] }
     ]
   };
 
@@ -1355,6 +1356,29 @@
   // 캐릭터는 그림책 속 발 위치에 발을 붙이고 종이에서 일어선다(팝업북처럼). 좌우로는 돌지 않고 늘 책 읽는 쪽(쪽의 아래)을 본다.
   // 휴대폰 높이에 따라 앞뒤로 기우는 정도만 천천히 바뀐다: 바로 위에서 보면 많이 눕고(그림이 보이게), 비스듬히 보면 곧게 선다.
   var STAND = { smooth: 9, snap: 0.5, snapDeg: 30, hold: 150, rise: 700, hover: 0.09, minLean: 32, maxLean: 85, leanSmooth: 3 };
+  // t: 초, on: 다 일어섰으면 1. 돌려주는 값 — up: 종이에서 위로(쪽 너비=1), side: 옆으로, roll: 발을 축으로 좌우 기울기(도),
+  // lean: 앞뒤로 더 숙이기(도), sx·sy: 납작해졌다 늘어나기(발 기준)
+  function moveAt(kind, t, on) {
+    var m = { up: 0, side: 0, roll: 0, lean: 0, sx: 1, sy: 1 }, P = Math.PI;
+    if (!on || !kind) return m;
+    function hop(T, A) { var ph = (t % T) / T, h = Math.sin(P * ph); m.up = A * h; m.sy = 1 + 0.06 * h - (ph < 0.08 || ph > 0.92 ? 0.05 : 0); m.sx = 2 - m.sy; }
+    switch (kind) {
+      case "hop":    hop(0.62, 0.05); m.roll = 3 * Math.sin(2 * P * t / 1.24); break;               // 깡충깡충
+      case "bounce": hop(0.36, 0.025); break;                                                       // 신나서 통통
+      case "bob":    m.up = 0.012 * (1 + Math.sin(2 * P * t / 1.8)); m.roll = 2 * Math.sin(2 * P * t / 3.6); break;
+      case "jump":   var c = t % 3.2; if (c < 0.5) { m.up = 0.08 * Math.sin(P * c / 0.5); m.sy = 1.05; m.sx = 0.96; }   // 놀라서 펄쩍
+                     else if (c < 0.9) m.roll = 4 * Math.sin(2 * P * (c - 0.5) / 0.13) * (0.9 - c) / 0.4; break;
+      case "stomp":  var sp = 2 * P * t / 0.9; m.roll = 7 * Math.sin(sp); m.up = 0.014 * Math.abs(Math.sin(sp)); break;  // 뒤뚱뒤뚱 씩씩
+      case "nod":    m.lean = 7 * Math.max(0, Math.sin(2 * P * t / 1.5)); break;                     // 끄덕끄덕
+      case "sway":   m.roll = 6 * Math.sin(2 * P * t / 2.4); break;                                  // 좌우로 살랑
+      case "perch":  var c2 = t % 2.2; if (c2 < 0.6) { var hh = Math.sin(P * ((c2 % 0.3) / 0.3)); m.up = 0.022 * hh; m.sy = 1 + 0.05 * hh; m.sx = 2 - m.sy; }
+                     m.roll = 4 * Math.sin(2 * P * t / 2.2); break;                                   // 콩콩
+      case "fly":    m.up = 0.03 * Math.sin(2 * P * t / 1.3); m.side = 0.04 * Math.sin(2 * P * t / 2.8);
+                     m.roll = 6 * Math.sin(2 * P * t / 2.8 + 1); m.sy = 1 + 0.035 * Math.sin(2 * P * t * 7); break;  // 날갯짓
+      case "show":   var c3 = t % 2.6; m.lean = c3 < 0.8 ? 10 * Math.sin(P * c3 / 0.8) : 0; m.up = 0.01 * Math.sin(2 * P * t / 1.3) + 0.01; break;  // 내밀 듯 까딱
+    }
+    return m;
+  }
   function registerArParts() {
     if (!window.AFRAME || AFRAME.components["ar-root"]) return;
     var T = AFRAME.THREE;
@@ -1371,7 +1395,8 @@
       tick: function (now, dt) {
         if (!this.target) this.target = this.el.sceneEl.querySelector('.ar-page[data-t="' + this.data.index + '"]');
         var tg = this.target && this.target.object3D, o = this.el.object3D;
-        if (tg && tg.visible) {
+        // 지금 알아본 쪽의 캐릭터만 보인다(쪽을 넘길 때 이전 쪽 캐릭터가 겹쳐 남지 않게)
+        if (tg && tg.visible && (arCur === -1 || arCur === this.data.index)) {
           tg.updateMatrixWorld(true);
           tg.matrixWorld.decompose(this.tp, this.tq, this.ts);
           // 처음 보이거나 크게 튀면 바로 맞추고, 아니면 조금씩 따라간다
@@ -1390,7 +1415,7 @@
       }
     });
     AFRAME.registerComponent("ar-stand", {
-      schema: { x: { type: "number" }, y: { type: "number" }, z: { type: "number", default: 0 }, k: { type: "int" } },
+      schema: { x: { type: "number" }, y: { type: "number" }, z: { type: "number", default: 0 }, k: { type: "int" }, move: { default: "" } },
       init: function () {
         this.cam = new T.Vector3(); this.base = new T.Vector3(); this.e = new T.Euler(0, 0, 0, "XYZ");
         this.lean = null;   // 종이에서 일어선 각도(0 = 누움, 90 = 곧게 섬)
@@ -1417,10 +1442,19 @@
           var step = (want - this.lean) * (1 - Math.exp(-(dt || 16) / 1000 * STAND.leanSmooth)), lim = 40 * Math.min(dt || 16, 100) / 1000;
           this.lean += Math.max(-lim, Math.min(lim, step));
         }
-        this.e.set(this.lean * e * Math.PI / 180, 0, 0);
+        // 그림책 내용에 맞춘 움직임: 다 일어선 뒤부터, 발은 종이에 붙인 채로
+        var mv = reduceMotion ? null : moveAt(d.move, (now - rc.t0) / 1000 + d.k * 0.37, st >= 1 ? 1 : 0);
+        var up = mv ? mv.up : 0, side = mv ? mv.side : 0, roll = mv ? mv.roll : 0, lean2 = mv ? mv.lean : 0;
+        this.e.set((this.lean * e + lean2) * Math.PI / 180, 0, roll * Math.PI / 180);
         this.el.object3D.rotation.copy(this.e);
-        this.el.object3D.position.copy(this.base);
-        if (this.shadow) this.shadow.object3D.visible = st > 0.05;
+        this.el.object3D.position.set(this.base.x + side, this.base.y, this.base.z + up);
+        this.el.object3D.scale.set(mv ? mv.sx : 1, mv ? mv.sy : 1, 1);
+        if (this.shadow) {
+          this.shadow.object3D.visible = st > 0.05;
+          var shrink = Math.max(0.55, 1 - (up + this.base.z) * 2.5);
+          this.shadow.object3D.position.x = d.x + side;
+          this.shadow.object3D.scale.set(shrink, shrink, 1);
+        }
       }
     });
   }
@@ -1438,7 +1472,7 @@
           '<a-image class="ar-shadow" src="#arShadow" position="' + c.x + ' ' + foot.toFixed(4) + ' 0.001" width="' + sw.toFixed(4) + '" height="' + (sw * 0.32).toFixed(4) + '"' +
             ' material="shader: flat; transparent: true; opacity: ' + (fly ? 0.45 : 0.85) + '; depthWrite: false" visible="false"></a-image>' +
           // 캐릭터: 발 위치를 기준점으로 서 있다(그림은 기준점 위로 올라간다). 나는 캐릭터는 종이 위에 떠 있다.
-          '<a-entity class="ar-char" ar-stand="x: ' + c.x + '; y: ' + foot.toFixed(4) + '; z: ' + (fly ? STAND.hover : 0) + '; k: ' + k + '">' +
+          '<a-entity class="ar-char" ar-stand="x: ' + c.x + '; y: ' + foot.toFixed(4) + '; z: ' + (fly ? STAND.hover : 0) + '; k: ' + k + '; move: ' + c.move + '">' +
             '<a-image src="#arI_' + c.src + '" position="0 ' + (h / 2).toFixed(4) + ' 0" width="' + c.w + '" height="' + h.toFixed(4) + '" material="shader: flat; transparent: true; alphaTest: 0.35; side: double"></a-image>' +
           '</a-entity>';
       });
